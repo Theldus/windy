@@ -134,7 +134,7 @@ static int abuf_append(struct abuf *ab, const char *buf, size_t len)
 	 * terminator, just in case it is used for
 	 * strings.
 	 */
-	if (len >= (ab->capacity - ab->len + 1))
+	if (len >= (ab->capacity - ab->len - 1))
 	{
 		size = round_power(ab->len + len + 1);
 		ptr  = realloc(ab->str, size);
