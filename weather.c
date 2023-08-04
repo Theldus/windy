@@ -176,7 +176,7 @@ static int json_get_number(
 	cJSON *number;
 	number = cJSON_GetObjectItemCaseSensitive(root, item);
 	if (!cJSON_IsNumber(number))
-		errto(out0, "'%s' value not found and/or is invalid!\n");
+		errto(out0, "'%s' value not found and/or is invalid!\n", item);
 	*dest = number->valueint;
 	return (0);
 out0:
@@ -192,7 +192,7 @@ static int json_get_string(
 	cJSON *str;
 	str = cJSON_GetObjectItemCaseSensitive(root, item);
 	if (!cJSON_IsString(str) || !str->valuestring)
-		errto(out0, "'%s' value not found and/or is invalid!\n");
+		errto(out0, "'%s' value not found and/or is invalid!\n", item);
 	*dest = strdup(str->valuestring);
 	if (!*dest)
 		panic("Unable to allocate string\n");

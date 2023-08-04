@@ -189,10 +189,8 @@ static int load_window_bg(const char *file)
 
 	bg_tex = IMG_LoadTexture(renderer, file);
 	if (!bg_tex)
-		panic("Unable to load image! (%s)\n");
+		panic("Unable to load image! (%s)\n", file);
 
-	SDL_QueryTexture(bg_tex, NULL, NULL, &w, &h);
-	SDL_SetWindowSize(window, w, h);
 	return (0);
 }
 
