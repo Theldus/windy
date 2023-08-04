@@ -204,7 +204,7 @@ static void free_image(SDL_Texture **tex)
 	if (!*tex)
 		return;
 	SDL_DestroyTexture(*tex);
-	tex = NULL;
+	*tex = NULL;
 }
 
 /**
