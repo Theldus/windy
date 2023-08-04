@@ -22,26 +22,28 @@
  * SOFTWARE.
  */
 
-#ifndef FONT_H
-#define FONT_H
+#ifndef COMMON_H
+#define COMMON_H
 
-	#include <SDL3/SDL_ttf.h>
+	#include <stdio.h>
+	#include <stdlib.h>
+	#include <SDL3/SDL.h>
 
-	struct rendered_text
-	{
-		SDL_Texture *text_texture;
-		int width;
-		int height;
-	};
+	extern SDL_Renderer *renderer;
 
-	extern int font_init(void);
-	extern void font_quit(void);
-	extern TTF_Font *font_open(const char *file, int ptsize);
-	extern void font_close(TTF_Font *font);
-	extern void font_create_text(struct rendered_text *rt, TTF_Font *font,
-		const char *text, const SDL_Color *color);
-	extern void font_destroy_text(struct rendered_text *rt);
-	extern void font_render_text(struct rendered_text *rt, int x, int y);
+	/* Panic abort. */
+	#define panic(...) \
+		do {\
+			fprintf(stderr, __VA_ARGS__); \
+			exit(EXIT_FAILURE); \
+		} while (0)
 
+	#define errto(lbl, ...) \
+		do {\
+			fprintf(stderr, __VA_ARGS__); \
+			goto lbl; \
+		} while (0)
 
-#endif /* FONT_H */
+	#define info(...) fprintf(stderr, __VA_ARGS__)
+
+#endif /* COMMON_H. */

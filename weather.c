@@ -28,23 +28,9 @@
 #include <string.h>
 #include <time.h>
 
-#include "weather.h"
 #include "cJSON/cJSON.h"
-
-#define info(...) fprintf(stderr, __VA_ARGS__)
-
-#define errto(lbl, ...) \
-	do {\
-		fprintf(stderr, __VA_ARGS__); \
-		goto lbl; \
-	} while (0)
-
-#define panic(...) \
-	do {\
-		fprintf(stderr, __VA_ARGS__); \
-		exit(EXIT_FAILURE); \
-	} while (0)
-
+#include "weather.h"
+#include "common.h"
 
 #define LUNAR_CYCLE_CONSTANT 29.53058770576
 #define BUF_CAPACITY 16

@@ -24,8 +24,7 @@
 
 #include <SDL3/SDL.h>
 #include "font.h"
-
-extern SDL_Renderer *renderer;
+#include "common.h"
 
 /**
  *
@@ -58,7 +57,7 @@ void font_close(TTF_Font *font) {
 /**
  *
  */
-int font_create_text(struct rendered_text *rt, TTF_Font *font,
+void font_create_text(struct rendered_text *rt, TTF_Font *font,
 	const char *text, const SDL_Color *color)
 {
 	int ret;
@@ -67,7 +66,7 @@ int font_create_text(struct rendered_text *rt, TTF_Font *font,
 	ret = -1;
 
 	if (!rt)
-		return (ret);
+		return;
 
 	/* Clear previous text, if any. */
 	font_destroy_text(rt);
@@ -75,18 +74,15 @@ int font_create_text(struct rendered_text *rt, TTF_Font *font,
 	/* Create a new one. */
 	s = TTF_RenderUTF8_Blended(font, text, *color);
 	if (!s)
-		return (ret);
+		panic("Unable to create font surface!\n");
 
 	rt->text_texture = SDL_CreateTextureFromSurface(renderer, s);
 	if (!rt->text_texture)
-		goto out;
+		panic("Unable to create font texture!\n");
 
-	ret = 0;
 	rt->width  = s->w;
 	rt->height = s->h;
-out:
 	SDL_DestroySurface(s);
-	return (ret);
 }
 
 /**

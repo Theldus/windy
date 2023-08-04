@@ -31,16 +31,7 @@
 
 #include "font.h"
 #include "weather.h"
-
-/* Panic abort. */
-#define panic(...) \
-	do {\
-		fprintf(stderr, __VA_ARGS__); \
-		exit(EXIT_FAILURE); \
-	} while (0)
-
-#define info(...) fprintf(stderr, __VA_ARGS__);
-
+#include "common.h"
 
 #define SCREEN_WIDTH  341
 #define SCREEN_HEIGHT 270
@@ -369,40 +360,30 @@ static void create_texts(
 	weather_get_forecast_days(&d1, &d2, &d3);
 
 	/* Footer. */
-	if (font_create_text(&txt_footer, font_16pt, wi.provider, days_color) < 0)
-		panic("Unable to create text!\n");
+	font_create_text(&txt_footer, font_16pt, wi.provider, days_color);
 
 	/* Forecast days string. */
-	if (font_create_text(&txt_day1, font_16pt, days_of_week[d1], days_color) < 0)
-		panic("Unable to create text!\n");
-	if (font_create_text(&txt_day2, font_16pt, days_of_week[d2], days_color) < 0)
-		panic("Unable to create text!\n");
-	if (font_create_text(&txt_day3, font_16pt, days_of_week[d3], days_color) < 0)
-		panic("Unable to create text!\n");
+	font_create_text(&txt_day1, font_16pt, days_of_week[d1], days_color);
+	font_create_text(&txt_day2, font_16pt, days_of_week[d2], days_color);
+	font_create_text(&txt_day3, font_16pt, days_of_week[d3], days_color);
 
 	/* Max temperature value. */
 	snprintf(buff1, sizeof buff1, "%dº", wi.forecast[0].max_temp);
 	snprintf(buff2, sizeof buff2, "%dº", wi.forecast[1].max_temp);
 	snprintf(buff3, sizeof buff3, "%dº", wi.forecast[2].max_temp);
 
-	if (font_create_text(&txt_day1_max, font_16pt, buff1, max_temp_color) < 0)
-		panic("Unable to create text!\n");
-	if (font_create_text(&txt_day2_max, font_16pt, buff2, max_temp_color) < 0)
-		panic("Unable to create text!\n");
-	if (font_create_text(&txt_day3_max, font_16pt, buff3, max_temp_color) < 0)
-		panic("Unable to create text!\n");
+	font_create_text(&txt_day1_max, font_16pt, buff1, max_temp_color);
+	font_create_text(&txt_day2_max, font_16pt, buff2, max_temp_color);
+	font_create_text(&txt_day3_max, font_16pt, buff3, max_temp_color);
 
 	/* Min temperature value. */
 	snprintf(buff1, sizeof buff1, "%dº", wi.forecast[0].min_temp);
 	snprintf(buff2, sizeof buff2, "%dº", wi.forecast[1].min_temp);
 	snprintf(buff3, sizeof buff3, "%dº", wi.forecast[2].min_temp);
 
-	if (font_create_text(&txt_day1_min, font_16pt, buff1, days_color) < 0)
-		panic("Unable to create text!\n");
-	if (font_create_text(&txt_day2_min, font_16pt, buff2, days_color) < 0)
-		panic("Unable to create text!\n");
-	if (font_create_text(&txt_day3_min, font_16pt, buff3, days_color) < 0)
-		panic("Unable to create text!\n");
+	font_create_text(&txt_day1_min, font_16pt, buff1, days_color);
+	font_create_text(&txt_day2_min, font_16pt, buff2, days_color);
+	font_create_text(&txt_day3_min, font_16pt, buff3, days_color);
 
 	/* Header: location, max/min, current condition and temperature. */
 	snprintf(buff1, sizeof buff1, "%dº - %dº", wi.max_temp, wi.min_temp);
@@ -410,14 +391,36 @@ static void create_texts(
 		toupper(wi.condition[0]), wi.condition+1);
 	snprintf(buff3, sizeof buff3, "%dº", wi.temperature);
 
-	if (font_create_text(&txt_location, font_18pt, wi.location, hdr_color) < 0)
-		panic("Unable to create text!\n");
-	if (font_create_text(&txt_curr_minmax, font_18pt, buff1, hdr_color) < 0)
-		panic("Unable to create text!\n");
-	if (font_create_text(&txt_curr_cond, font_18pt, buff2, hdr_color) < 0)
-		panic("Unable to create text!\n");
-	if (font_create_text(&txt_curr_temp, font_40pt, buff3, hdr_color) < 0)
-		panic("Unable to create text!\n");
+	font_create_text(&txt_location, font_18pt, wi.location, hdr_color);
+	font_create_text(&txt_curr_minmax, font_18pt, buff1, hdr_color);
+	font_create_text(&txt_curr_cond, font_18pt, buff2, hdr_color);
+	font_create_text(&txt_curr_temp, font_40pt, buff3, hdr_color);
+}
+
+/**
+ *
+ */
+void free_resources(void)
+{
+	free_image(&bg_icon_tex);
+	free_image(&fc_day1_tex);
+	free_image(&fc_day2_tex);
+	free_image(&fc_day3_tex);
+	font_destroy_text(&txt_footer);
+	font_destroy_text(&txt_day1);
+	font_destroy_text(&txt_day2);
+	font_destroy_text(&txt_day3);
+	font_destroy_text(&txt_day1_max);
+	font_destroy_text(&txt_day2_max);
+	font_destroy_text(&txt_day3_max);
+	font_destroy_text(&txt_day1_min);
+	font_destroy_text(&txt_day2_min);
+	font_destroy_text(&txt_day3_min);
+	font_destroy_text(&txt_curr_temp);
+	font_destroy_text(&txt_curr_cond);
+	font_destroy_text(&txt_curr_minmax);
+	font_destroy_text(&txt_location);
+	font_destroy_text(&txt_curr_temp);
 }
 
 /**
@@ -461,6 +464,8 @@ int main(void)
     }
 
 quit:
+	free_resources();
+
 	if (bg_tex)
 		SDL_DestroyTexture(bg_tex);
 	if (renderer)
@@ -468,7 +473,7 @@ quit:
 	if (window)
 		SDL_DestroyWindow(window);
 
-	font_init();
+	font_quit();
 	IMG_Quit();
 	SDL_Quit();
 }
