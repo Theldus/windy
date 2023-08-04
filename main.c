@@ -347,7 +347,7 @@ static void create_texts(
 
 	static const char *const days_of_week[] = {
 		"sunday",
-		"wonday",
+		"monday",
 		"tuesday",
 		"wednesday",
 		"thursday",
