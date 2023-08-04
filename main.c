@@ -23,6 +23,7 @@
  */
 
 #include <ctype.h>
+#include <getopt.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -116,13 +117,19 @@ static SDL_Color color_black = {0,0,0};
 /* Current weather info. */
 struct weather_info wi = {0};
 
+/* Command-line arguments. */
+const char *execute_command;
+Uint32 update_weather_time_ms = 600*1000;
+
+
 /* Forward definitions. */
 static void render_image(SDL_Texture *tex, int x, int y);
 static void create_texts(
 	const SDL_Color *days_color,
 	const SDL_Color *max_temp_color,
 	const SDL_Color *hdr_color);
-
+static Uint32 update_weather_cb(Uint32 interval,
+	void *data);
 
 /**
  * Update logic and drawing for each frame
@@ -248,8 +255,8 @@ static void update_weather_info(void)
 	char buff2[32] = {0};
 	char buff3[32] = {0};
 
-	if (weather_get("cat inp", &wi) < 0)
-		info("Unable to get weather info!\n");
+	if (weather_get(execute_command, &wi) < 0)
+		errto(out, "Unable to get weather info!\n");
 
 	/* Icon to be loaded if not 'clear'. */
 	snprintf(buff1,
@@ -313,12 +320,16 @@ static void update_weather_info(void)
 	load_image(&fc_day1_tex, buff1);
 	load_image(&fc_day2_tex, buff2);
 	load_image(&fc_day3_tex, buff3);
+
+out:
+	SDL_AddTimer(update_weather_time_ms,
+		update_weather_cb, NULL);
 }
 
 /**
  *
  */
-static int load_fonts(void)
+static void load_fonts(void)
 {
 	/* Load require fonts and sizes. */
 	font_16pt = font_open("assets/fonts/NotoSans-Regular.ttf", 16);
@@ -422,17 +433,94 @@ void free_resources(void)
 }
 
 /**
+ *
+ */
+static Uint32 update_weather_cb(Uint32 interval, void *data)
+{
+	((void)interval);
+	((void)data);
+	SDL_Event event;
+	event.type       = SDL_EVENT_USER;
+	event.user.data1 = NULL;
+	SDL_PushEvent(&event);
+	return (0);
+}
+
+/**
+ * @brief Show program usage.
+ * @param prgname Program name.
+ */
+void usage(const char *prgname)
+{
+	fprintf(stderr, "Usage: %s [-t <time-in-seconds>] -c <command-to-run>\n",
+		prgname);
+	fprintf(stderr,
+		"Options:\n"
+		"  -t           Interval time (in seconds) to check for weather\n"
+		"               updates (default = 10 minutes)\n"
+		"  -c <command> Command to execute when the update time reaches\n"
+		"  -h           This help\n\n"
+		"Example:\n"
+		" Update the weather info each 30 minutes, by running the command\n"
+		" 'python request.py'\n"
+		"    $ %s -t 1800 -c \"python request.py\"\n\n"
+		"Obs: Option -t is not required, -c is required!\n",
+		prgname);
+	exit(EXIT_FAILURE);
+}
+
+/**
+ * @brief Parse command-line arguments.
+ *
+ * @param argc Argument count.
+ * @param argv Argument list.
+ */
+void parse_args(int argc, char **argv)
+{
+	char *tmp;
+	int c; /* Current arg. */
+	while ((c = getopt(argc, argv, "t:c:h")) != -1)
+	{
+		switch (c) {
+		case 'h':
+			usage(argv[0]);
+			break;
+		case 't':
+			update_weather_time_ms = atoi(optarg)*1000;
+			if (!update_weather_time_ms) {
+				info("Invalid -t value, please choose a valid interval!\n");
+				usage(argv[0]);
+			}
+			break;
+		case 'c':
+			execute_command = optarg;
+			break;
+		default:
+			usage(argv[0]);
+			break;
+		}
+	}
+
+	if (!execute_command) {
+		info("Option -c is required!\n");
+		usage(argv[0]);
+	}
+}
+
+/**
  * Main weather loop.
  */
-int main(void)
+int main(int argc, char **argv)
 {
 	SDL_Event event;
 	uint32_t start_time;
 	uint32_t end_time;
 	uint32_t delta_time;
 
+	parse_args(argc, argv);
+
 	/* Initialize. */
-	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
 		panic("SDL could not initialize!: %s\n", SDL_GetError());
 	if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG))
 		panic("Unable to initialize SDL_image!\n");
@@ -451,11 +539,17 @@ int main(void)
 
 	update_weather_info();
 
+	SDL_AddTimer(update_weather_time_ms,
+		update_weather_cb, NULL);
+
 	while (1)
 	{
-		while (SDL_PollEvent(&event) != 0)
+		while (SDL_PollEvent(&event) != 0) {
 			if (event.type == SDL_EVENT_QUIT)
 				goto quit;
+			else if (event.type == SDL_EVENT_USER)
+				update_weather_info();
+		}
 
 		update_frame();
 		SDL_Delay(500);
