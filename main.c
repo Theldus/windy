@@ -34,6 +34,7 @@
 #include "weather.h"
 #include "common.h"
 
+/* Window size. */
 #define SCREEN_WIDTH  341
 #define SCREEN_HEIGHT 270
 
@@ -49,6 +50,7 @@ static SDL_Texture *bg_icon_tex;
 static int screen_width  = SCREEN_WIDTH;
 static int screen_height = SCREEN_HEIGHT;
 
+/* Loaded fonts and rendered texts. */
 static TTF_Font *font_16pt;
 static TTF_Font *font_18pt;
 static TTF_Font *font_40pt;
@@ -57,12 +59,10 @@ static struct rendered_text txt_day1, txt_day2, txt_day3;
 static struct rendered_text txt_day1_min, txt_day1_max;
 static struct rendered_text txt_day2_min, txt_day2_max;
 static struct rendered_text txt_day3_min, txt_day3_max;
-
 static struct rendered_text txt_location;
 static struct rendered_text txt_curr_minmax;
 static struct rendered_text txt_curr_cond;
 static struct rendered_text txt_curr_temp;
-
 
 /* Forecast icons textures. */
 static SDL_Texture *fc_day1_tex;
@@ -136,10 +136,6 @@ static Uint32 update_weather_cb(Uint32 interval,
  */
 static inline void update_frame(void)
 {
-	/* ----------------------------------------------------------------- */
-	/* Update drawing                                                    */
-	/* ----------------------------------------------------------------- */
-
 	/* Draw background alpha image. */
 	SDL_RenderClear(renderer);
 
@@ -147,33 +143,43 @@ static inline void update_frame(void)
 	SDL_RenderTexture(renderer, bg_tex, NULL, NULL);
 	render_image(bg_icon_tex, 0,0);
 
+	/* Footer and forecast days text. */
 	font_render_text(&txt_footer, FOOTER_X, FOOTER_Y);
 	font_render_text(&txt_day1, DAY1_X, DAY_Y);
 	font_render_text(&txt_day2, DAY2_X, DAY_Y);
 	font_render_text(&txt_day3, DAY3_X, DAY_Y);
 
+	/* Forecast days min and max temp. */
 	font_render_text(&txt_day1_max, DAY1_X, DAYMAX_Y);
 	font_render_text(&txt_day2_max, DAY2_X, DAYMAX_Y);
 	font_render_text(&txt_day3_max, DAY3_X, DAYMAX_Y);
-
 	font_render_text(&txt_day1_min, DAY1_X, DAYMIN_Y);
 	font_render_text(&txt_day2_min, DAY2_X, DAYMIN_Y);
 	font_render_text(&txt_day3_min, DAY3_X, DAYMIN_Y);
 
+	/* Header: curr temp, condition, min/max and location. */
 	font_render_text(&txt_curr_temp,   HDR_MAX_X - txt_curr_temp.width,   HDR_TEMP_Y);
 	font_render_text(&txt_curr_cond,   HDR_MAX_X - txt_curr_cond.width,   HDR_COND_Y);
 	font_render_text(&txt_curr_minmax, HDR_MAX_X - txt_curr_minmax.width, HDR_MINMAX_Y);
 	font_render_text(&txt_location,    HDR_MAX_X - txt_location.width,    HDR_LOC_Y);
 
+	/* Forecast icons based on weather condition. */
 	render_image(fc_day1_tex, DAY1_IMG_X, DAY_IMG_Y);
 	render_image(fc_day2_tex, DAY2_IMG_X, DAY_IMG_Y);
 	render_image(fc_day3_tex, DAY3_IMG_X, DAY_IMG_Y);
 
 	/* Render everything. */
 	SDL_RenderPresent(renderer);
-
 }
 
+/**
+ * @brief Creates the current SDL window and renderer
+ * with given width @p w, height @P h and @p flags.
+ *
+ * @param w     Window width.
+ * @param h     Window height.
+ * @param flags Window flags.
+ */
 static int create_sdl_window(int w, int h, int flags)
 {
 	if (SDL_CreateWindowAndRenderer(
@@ -185,9 +191,12 @@ static int create_sdl_window(int w, int h, int flags)
 }
 
 /**
+ * @brief Load the main window background with
+ * the file specified in @p file.
  *
+ * @param Path to the background image.
  */
-static int load_window_bg(const char *file)
+static void load_window_bg(const char *file)
 {
 	int w, h;
 
@@ -202,7 +211,10 @@ static int load_window_bg(const char *file)
 }
 
 /**
+ * @brief If the texture pointed by @p tex exists,
+ * free it, otherwise, do nothing.
  *
+ * @param tex Texture pointer.
  */
 static void free_image(SDL_Texture **tex)
 {
@@ -213,7 +225,14 @@ static void free_image(SDL_Texture **tex)
 }
 
 /**
+ * @brief Load a given image path pointed by @p img, and
+ * save into the texture pointer pointed by @p tex.
  *
+ * If the texture pointer already points to an existing
+ * texture, the old texture is deallocated first.
+ *
+ * @param tex Texture pointer to be loaded.
+ * @param img Image path.
  */
 static void load_image(SDL_Texture **tex, const char *img)
 {
@@ -224,7 +243,18 @@ static void load_image(SDL_Texture **tex, const char *img)
 }
 
 /**
+ * @brief Copy the texture pointed by @p tex into the
+ * renderer, at coordinates @p x and @p y.
  *
+ * This is an small wrapper around 'SDL_RenderTexture',
+ * with an additional check if the texture pointer is
+ * valid or not, i.e., this function can be called
+ * at any time, even if the texture does not exist
+ * (NULL).
+ *
+ * @param tex Texture to be rendered.
+ * @param x   Screen X coordinate.
+ * @param y   Screen Y coordinate.
  */
 static void render_image(SDL_Texture *tex, int x, int y)
 {
@@ -243,7 +273,11 @@ static void render_image(SDL_Texture *tex, int x, int y)
 }
 
 /**
+ * @brief 'Main' weather update routine
  *
+ * Executes the command given, read its output in stdout,
+ * parse its json and then choose which text/icons should
+ * be loaded into the screen.
  */
 static void update_weather_info(void)
 {
@@ -327,7 +361,8 @@ out:
 }
 
 /**
- *
+ * @brief Load the same font in three diferent sizes
+ * for the GUI texts.
  */
 static void load_fonts(void)
 {
@@ -344,7 +379,12 @@ static void load_fonts(void)
 }
 
 /**
+ * @brief Create all texts/textures to the GUI.
  *
+ * @param days_color     Color of footer, days and min temp.
+ * @param max_temp_color Color of the max temp color for the
+ *                       forecast days.
+ * @param hdr_color      Header color (curr temp, location...)
  */
 static void create_texts(
 	const SDL_Color *days_color,
@@ -407,7 +447,7 @@ static void create_texts(
 }
 
 /**
- *
+ * @brief Free all fonts and textures used.
  */
 void free_resources(void)
 {
@@ -433,7 +473,12 @@ void free_resources(void)
 }
 
 /**
+ * @brief SDL timer callback to update the weather
  *
+ * @param interval Current timer interval
+ * @param data Custom data
+ * @return Returns the time of the next callback, 0
+ * to disable.
  */
 static Uint32 update_weather_cb(Uint32 interval, void *data)
 {

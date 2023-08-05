@@ -35,12 +35,14 @@
 #define LUNAR_CYCLE_CONSTANT 29.53058770576
 #define BUF_CAPACITY 16
 
+/* Append buffer. */
 struct abuf {
 	char *str;
 	size_t len;
 	size_t capacity;
 };
 
+/* Moon phases path. */
 const char* moon_phases[] = {
 	"assets/bg_icon_new_moon.png",
 	"assets/bg_icon_first_quarter.png",
@@ -66,7 +68,11 @@ static size_t round_power(size_t target)
 }
 
 /**
+ * @brief Initializes the append buffer.
  *
+ * @param ab Append buffer pointer to be initialized.
+ *
+ * @return Returns 0 if success, -1 otherwise.
  */
 static int abuf_alloc(struct abuf *ab)
 {
@@ -83,7 +89,9 @@ static int abuf_alloc(struct abuf *ab)
 }
 
 /**
+ * @brief Free the append buffer.
  *
+ * @param ab Append buffer pointer.
  */
 static void abuf_free(struct abuf *ab)
 {
@@ -96,7 +104,14 @@ static void abuf_free(struct abuf *ab)
 }
 
 /**
+ * @brief Adds a new buffer @p buf of length @p len into
+ * the append buffer @p ab.
  *
+ * @param ab  Append buffer.
+ * @param buf Buffer to be add.
+ * @param len Buffer length.
+ *
+ * @return Returns 0 if success, -1 otherwise.
  */
 static int abuf_append(struct abuf *ab, const char *buf, size_t len)
 {
@@ -138,7 +153,12 @@ static int abuf_append(struct abuf *ab, const char *buf, size_t len)
 }
 
 /**
+ * @brief Check if a given weather condition
+ * is valid or not.
  *
+ * @param condition Weather condition string.
+ *
+ * @return Returns 1 if valid, 0 otherwise.
  */
 static int is_condition_valid(const char *condition)
 {
@@ -168,7 +188,14 @@ static int is_condition_valid(const char *condition)
 }
 
 /**
+ * @brief Given a cSON object pointed by @p root, read
+ * its @p item as a number and saves into @p dest.
  *
+ * @param root JSON root node.
+ * @param item Item name to be read.
+ * @param dest Destination integer pointer.
+ *
+ * @return Returns 0 if success, -1 otherwise.
  */
 static int json_get_number(
 	const cJSON *root, const char *item, int *dest)
@@ -184,7 +211,14 @@ out0:
 }
 
 /**
+ * @brief Given a cSON object pointed by @p root, read
+ * its @p item as a string and saves into @p dest.
  *
+ * @param root JSON root node.
+ * @param item Item name to be read.
+ * @param dest Destination string pointer.
+ *
+ * @return Returns 0 if success, -1 otherwise.
  */
 static int json_get_string(
 	const cJSON *root, const char *item, char **dest)
@@ -202,7 +236,13 @@ out0:
 }
 
 /**
+ * @brief Parses the received json in @p json_str into the
+ * structure weather_info pointed by @p wi.
  *
+ * This json (and structure) contains all elements to
+ * show into the screen.
+ *
+ * @return Returns 0 if the parsing was succeeded, -1 if not.
  */
 static int json_parse_weather(const char *json_str,
 	struct weather_info *wi)
@@ -271,7 +311,10 @@ out0:
 }
 
 /**
+ * @brief Deallocates the current data saved into the
+ * weather_info structure.
  *
+ * @param wi Weather info structure.
  */
 void weather_free(struct weather_info *wi)
 {
@@ -285,7 +328,13 @@ void weather_free(struct weather_info *wi)
 }
 
 /**
+ * @brief Issues the command provided by the user, reads its
+ * stdout and parses its json.
  *
+ * @param command Command to be issued.
+ * @param wi      Weather info structure to be filled.
+ *
+ * @return Returns 0 if success, -1 otherwise.
  */
 int weather_get(const char *command, struct weather_info *wi)
 {
@@ -313,7 +362,9 @@ int weather_get(const char *command, struct weather_info *wi)
 }
 
 /**
+ * @brief Checks if the current hour is day or not.
  *
+ * @return Returns 1 if day, 0 if night.
  */
 int weather_is_day(void)
 {
@@ -325,7 +376,12 @@ int weather_is_day(void)
 }
 
 /**
+ * @brief Returns the days number for the next
+ * three days.
  *
+ * @param d1 Next day 1.
+ * @param d2 Next day 2.
+ * @param d3 Next day 3.
  */
 void weather_get_forecast_days(int *d1, int *d2, int *d3)
 {
@@ -339,13 +395,17 @@ void weather_get_forecast_days(int *d1, int *d2, int *d3)
 }
 
 /**
- *
- *
+ * @brief Roughly calculates the current moon phase
+ * and returns an string pointing the path of the
+ * corresponding moon asset.
  *
  * Note: Algorithm based on this one:
  *   https://minkukel.com/en/various/calculating-moon-phase/
  * but adapted to my needs, i.e., using only for 4
  * main phases, instead of the 8.
+ *
+ * @return Returns an string pointing the current
+ * moon phase icon.
  */
 const char *weather_get_moon_phase_icon(void)
 {
@@ -373,14 +433,3 @@ const char *weather_get_moon_phase_icon(void)
 	currentphase = (int)round(currentfrac * 4) % 4;
 	return (moon_phases[currentphase]);
 }
-
-
-#if 0
-int main(void)
-{
-	struct weather_info wi = {0};
-	weather_get("cat inp", &wi);
-
-	printf("is_day: %d\n", weather_is_day());
-}
-#endif
