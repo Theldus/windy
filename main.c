@@ -432,6 +432,7 @@ static void create_texts(
  */
 void free_resources(void)
 {
+	/* Free textures. */
 	free_image(&bg_tex);
 	free_image(&bg_icon_tex);
 	free_image(&fc_day1_tex);
@@ -452,6 +453,11 @@ void free_resources(void)
 	font_destroy_text(&txt_curr_minmax);
 	font_destroy_text(&txt_location);
 	font_destroy_text(&txt_curr_temp);
+
+	/* Close loaded fonts. */
+	font_close(font_16pt);
+	font_close(font_18pt);
+	font_close(font_40pt);
 }
 
 /**
