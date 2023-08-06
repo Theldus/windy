@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_image.h>
 
@@ -191,26 +192,6 @@ static int create_sdl_window(int w, int h, int flags)
 }
 
 /**
- * @brief Load the main window background with
- * the file specified in @p file.
- *
- * @param Path to the background image.
- */
-static void load_window_bg(const char *file)
-{
-	int w, h;
-
-	if (bg_tex)
-		SDL_DestroyTexture(bg_tex);
-
-	bg_tex = IMG_LoadTexture(renderer, file);
-	if (!bg_tex)
-		panic("Unable to load image! (%s)\n", file);
-
-	return (0);
-}
-
-/**
  * @brief If the texture pointed by @p tex exists,
  * free it, otherwise, do nothing.
  *
@@ -337,7 +318,7 @@ static void update_weather_info(void)
 	}
 
 	free_image(&bg_icon_tex);
-	load_window_bg(wbg);
+	load_image(&bg_tex, wbg);
 	if (bg_icon_tex_path)
 		load_image(&bg_icon_tex, bg_icon_tex_path);
 
@@ -451,6 +432,7 @@ static void create_texts(
  */
 void free_resources(void)
 {
+	free_image(&bg_tex);
 	free_image(&bg_icon_tex);
 	free_image(&fc_day1_tex);
 	free_image(&fc_day2_tex);
@@ -561,6 +543,7 @@ int main(int argc, char **argv)
 	uint32_t start_time;
 	uint32_t end_time;
 	uint32_t delta_time;
+	char *base_path;
 
 	parse_args(argc, argv);
 
@@ -572,6 +555,10 @@ int main(int argc, char **argv)
 	if (font_init() < 0)
 		panic("Unable to initialize SDL_ttf!\n");
 
+	base_path = SDL_GetBasePath();
+	if (!base_path)
+		panic("Unable to get program base path!\n");
+	chdir(base_path);
 
 	create_sdl_window(
 		screen_width, screen_height,
@@ -579,7 +566,7 @@ int main(int argc, char **argv)
 		SDL_WINDOW_BORDERLESS/*|
 		SDL_WINDOW_UTILITY*/);
 
-	load_window_bg("assets/bg_sunny_day.png");
+	load_image(&bg_tex, "assets/bg_sunny_day.png");
 	load_fonts();
 
 	update_weather_info();
@@ -603,13 +590,12 @@ int main(int argc, char **argv)
 quit:
 	free_resources();
 
-	if (bg_tex)
-		SDL_DestroyTexture(bg_tex);
 	if (renderer)
 		SDL_DestroyRenderer(renderer);
 	if (window)
 		SDL_DestroyWindow(window);
 
+	SDL_free(base_path);
 	font_quit();
 	IMG_Quit();
 	SDL_Quit();
