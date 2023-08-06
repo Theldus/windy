@@ -410,7 +410,6 @@ void weather_get_forecast_days(int *d1, int *d2, int *d3)
 const char *weather_get_moon_phase_icon(void)
 {
 	time_t now, first_new_moon;
-	time_t diffsecs;
 	int currentphase;
 	double lunarsecs;
 	double totalsecs;

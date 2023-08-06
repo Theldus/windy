@@ -78,10 +78,7 @@ void font_close(TTF_Font *font) {
 void font_create_text(struct rendered_text *rt, TTF_Font *font,
 	const char *text, const SDL_Color *color)
 {
-	int ret;
 	SDL_Surface *s;
-
-	ret = -1;
 
 	if (!rt)
 		return;

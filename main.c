@@ -48,9 +48,6 @@ static SDL_Texture *bg_tex;
 /* Icon background (sun, moon...). */
 static SDL_Texture *bg_icon_tex;
 
-static int screen_width  = SCREEN_WIDTH;
-static int screen_height = SCREEN_HEIGHT;
-
 /* Loaded fonts and rendered texts. */
 static TTF_Font *font_16pt;
 static TTF_Font *font_18pt;
@@ -71,11 +68,11 @@ static SDL_Texture *fc_day2_tex;
 static SDL_Texture *fc_day3_tex;
 
 /* Text colors. */
-static SDL_Color color_blue  = {148,199,228};
-static SDL_Color color_white = {255,255,255};
-static SDL_Color color_gray  = {146,148,149};
-static SDL_Color color_cloudy_gray = {162,179,189};
-static SDL_Color color_black = {0,0,0};
+static SDL_Color color_blue  = {148,199,228,SDL_ALPHA_OPAQUE};
+static SDL_Color color_white = {255,255,255,SDL_ALPHA_OPAQUE};
+static SDL_Color color_gray  = {146,148,149,SDL_ALPHA_OPAQUE};
+static SDL_Color color_cloudy_gray = {162,179,189,SDL_ALPHA_OPAQUE};
+static SDL_Color color_black = {0,0,0,SDL_ALPHA_OPAQUE};
 
 /* Footer text, i.e., where the weather data
  * were obtained. */
@@ -510,7 +507,6 @@ void usage(const char *prgname)
  */
 void parse_args(int argc, char **argv)
 {
-	char *tmp;
 	int c; /* Current arg. */
 	while ((c = getopt(argc, argv, "t:c:h")) != -1)
 	{
@@ -546,9 +542,6 @@ void parse_args(int argc, char **argv)
 int main(int argc, char **argv)
 {
 	SDL_Event event;
-	uint32_t start_time;
-	uint32_t end_time;
-	uint32_t delta_time;
 	char *base_path;
 
 	parse_args(argc, argv);
@@ -567,10 +560,10 @@ int main(int argc, char **argv)
 	chdir(base_path);
 
 	create_sdl_window(
-		screen_width, screen_height,
+		SCREEN_WIDTH, SCREEN_HEIGHT,
 		SDL_WINDOW_TRANSPARENT|
-		SDL_WINDOW_BORDERLESS/*|
-		SDL_WINDOW_UTILITY*/);
+		SDL_WINDOW_BORDERLESS|
+		SDL_WINDOW_UTILITY);
 
 	load_image(&bg_tex, "assets/bg_sunny_day.png");
 	load_fonts();
