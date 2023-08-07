@@ -31,6 +31,9 @@ add_executable(weather
     font.c
     cJSON/cJSON.c)
 
+target_compile_options(weather PRIVATE
+	-Wall -Wextra)
+
 include(FetchContent)
 set(FETCHCONTENT_BASE_DIR ${CMAKE_SOURCE_DIR}/SDL_src)
 set(FETCHCONTENT_QUIET FALSE)
@@ -40,22 +43,28 @@ include(FindPkgConfig)
 set(PKGCONFIG_LIBRARIES sdl3 sdl3-image sdl3-ttf)
 
 # Define the specific GIT_TAG for each library
-set(GIT_TAG_sdl3       f2ae00c1ad5194586bacbd7b374422bd1d47c81a)
-set(GIT_TAG_sdl3-image 6d6857c1833bfc18222373cf256aec11b653d136)
-set(GIT_TAG_sdl3-ttf   fee14e525f5bd99612b76e2737400d33eddf0595)
+set(GIT_TAGS
+	f2ae00c1ad5194586bacbd7b374422bd1d47c81a  # SDL
+	6d6857c1833bfc18222373cf256aec11b653d136  # SDL_image
+	fee14e525f5bd99612b76e2737400d33eddf0595) # SDL_ttf
 
 # Define a mapping between pkg-config names and repository names
-set(map_sdl3       SDL)
-set(map_sdl3-image SDL_image)
-set(map_sdl3-ttf   SDL_ttf)
+set(GIT_REPOS SDL SDL_image SDL_ttf)
 
-# Define a map between lib names and link libraries names
-set(lnk_sdl3       SDL3::SDL3)
-set(lnk_sdl3-image SDL3_image::SDL3_image)
-set(lnk_sdl3-ttf   SDL3_ttf::SDL3_ttf)
+# Link names
+set(LNK_NAMES SDL3::SDL3 SDL3_image::SDL3_image SDL3_ttf::SDL3_ttf)
+
+# Build static
+set(SDL_STATIC TRUE CACHE BOOL "Build a SDL static library (if available)")
 
 # Find and set compiler and linker flags for each library using pkg-config
-foreach(LIBRARY ${PKGCONFIG_LIBRARIES})
+foreach(INDEX RANGE 2)
+
+	list(GET PKGCONFIG_LIBRARIES ${INDEX} LIBRARY)
+	list(GET GIT_REPOS ${INDEX} REPO)
+	list(GET GIT_TAGS  ${INDEX} TAG)
+	list(GET LNK_NAMES ${INDEX} LINK)
+
     pkg_check_modules(PKG_${LIBRARY} QUIET IMPORTED_TARGET ${LIBRARY})
     if (NOT PKG_${LIBRARY}_FOUND)
         message(WARNING
@@ -63,14 +72,14 @@ foreach(LIBRARY ${PKGCONFIG_LIBRARIES})
 
         FetchContent_Declare(
             "av_${LIBRARY}"
-            GIT_REPOSITORY https://github.com/libsdl-org/${map_${LIBRARY}}.git
-            GIT_TAG ${GIT_TAG_${LIBRARY}}
+            GIT_REPOSITORY https://github.com/libsdl-org/${REPO}.git
+            GIT_TAG ${TAG}
             GIT_SHALLOW FALSE
             GIT_PROGRESS TRUE)
         FetchContent_MakeAvailable("av_${LIBRARY}")
 
      	# Add to our lib list 'normally'
-        target_link_libraries(weather PUBLIC ${lnk_${LIBRARY}})
+        target_link_libraries(weather PUBLIC ${LINK})
     else()
     	# If found, add to our lib list via pkg-conig
         target_link_libraries(weather PUBLIC PkgConfig::PKG_${LIBRARY})
@@ -79,3 +88,7 @@ endforeach()
 
 # Math lib
 target_link_libraries(weather PUBLIC m)
+
+# Copy assets folder
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets
+	DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
