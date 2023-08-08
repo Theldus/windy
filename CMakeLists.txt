@@ -89,6 +89,10 @@ endforeach()
 # Math lib
 target_link_libraries(weather PUBLIC m)
 
-# Copy assets folder
+# Copy assets folder to build folder
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets
+	DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+
+# Copy request script to build folder
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/request.py
 	DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
