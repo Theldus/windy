@@ -113,12 +113,20 @@ static SDL_Color color_black = {0,0,0,SDL_ALPHA_OPAQUE};
 #define HDR_LOC_Y    120
 
 /* Current weather info. */
-struct weather_info wi = {0};
+static struct weather_info wi = {0};
 
 /* Command-line arguments. */
-const char *execute_command;
-Uint32 update_weather_time_ms = 600*1000;
-
+static struct args {
+	const char *execute_command;
+	Uint32 update_weather_time_ms;
+	int x;
+	int y;
+} args = {
+	.execute_command = NULL,
+	.update_weather_time_ms = 600*1000,
+	.x = -1,
+	.y = -1
+};
 
 /* Forward definitions. */
 static void render_image(SDL_Texture *tex, int x, int y);
@@ -185,6 +193,11 @@ static int create_sdl_window(int w, int h, int flags)
 		panic("Unable to create window and renderer!\n");
 
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+	/* Set coordinates. */
+	if (args.x >= 0 && args.y >= 0)
+		SDL_SetWindowPosition(window, args.x, args.y);
+
 	return (0);
 }
 
@@ -267,7 +280,7 @@ static void update_weather_info(void)
 	char buff2[32] = {0};
 	char buff3[32] = {0};
 
-	if (weather_get(execute_command, &wi) < 0)
+	if (weather_get(args.execute_command, &wi) < 0)
 		errto(out, "Unable to get weather info!\n");
 
 	/* Icon to be loaded if not 'clear'. */
@@ -334,7 +347,7 @@ static void update_weather_info(void)
 	load_image(&fc_day3_tex, buff3);
 
 out:
-	SDL_AddTimer(update_weather_time_ms,
+	SDL_AddTimer(args.update_weather_time_ms,
 		update_weather_cb, NULL);
 }
 
@@ -482,19 +495,21 @@ static Uint32 update_weather_cb(Uint32 interval, void *data)
  */
 void usage(const char *prgname)
 {
-	fprintf(stderr, "Usage: %s [-t <time-in-seconds>] -c <command-to-run>\n",
+	fprintf(stderr, "Usage: %s [options] -c <command-to-run>\n",
 		prgname);
 	fprintf(stderr,
 		"Options:\n"
 		"  -t           Interval time (in seconds) to check for weather\n"
 		"               updates (default = 10 minutes)\n"
 		"  -c <command> Command to execute when the update time reaches\n"
+		"  -x <pos>     Set the window X coordinate"
+		"  -y <pos>     Set the window Y coordinate"
 		"  -h           This help\n\n"
 		"Example:\n"
 		" Update the weather info each 30 minutes, by running the command\n"
 		" 'python request.py'\n"
 		"    $ %s -t 1800 -c \"python request.py\"\n\n"
-		"Obs: Option -t is not required, -c is required!\n",
+		"Obs: Options -t,-x and -y are not required, -c is required!\n",
 		prgname);
 	exit(EXIT_FAILURE);
 }
@@ -508,21 +523,27 @@ void usage(const char *prgname)
 void parse_args(int argc, char **argv)
 {
 	int c; /* Current arg. */
-	while ((c = getopt(argc, argv, "t:c:h")) != -1)
+	while ((c = getopt(argc, argv, "t:c:x:y:h")) != -1)
 	{
 		switch (c) {
 		case 'h':
 			usage(argv[0]);
 			break;
 		case 't':
-			update_weather_time_ms = atoi(optarg)*1000;
-			if (!update_weather_time_ms) {
+			args.update_weather_time_ms = atoi(optarg)*1000;
+			if (!args.update_weather_time_ms) {
 				info("Invalid -t value, please choose a valid interval!\n");
 				usage(argv[0]);
 			}
 			break;
 		case 'c':
-			execute_command = optarg;
+			args.execute_command = optarg;
+			break;
+		case 'x':
+			args.x = atoi(optarg);
+			break;
+		case 'y':
+			args.y = atoi(optarg);
 			break;
 		default:
 			usage(argv[0]);
@@ -530,7 +551,7 @@ void parse_args(int argc, char **argv)
 		}
 	}
 
-	if (!execute_command) {
+	if (!args.execute_command) {
 		info("Option -c is required!\n");
 		usage(argv[0]);
 	}
@@ -570,7 +591,7 @@ int main(int argc, char **argv)
 
 	update_weather_info();
 
-	SDL_AddTimer(update_weather_time_ms,
+	SDL_AddTimer(args.update_weather_time_ms,
 		update_weather_cb, NULL);
 
 	while (1)
