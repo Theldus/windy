@@ -22,8 +22,8 @@
 
 CC      ?=  gcc
 CFLAGS  += `pkg-config --cflags sdl3` -O2 -Wall -Wextra
-LDFLAGS += `pkg-config --libs sdl3` -lSDL3_image -lSDL3_ttf -pthread -lm -ldl
-C_SRC    = main.c font.c weather.c cJSON/cJSON.c
+LDFLAGS += `pkg-config --libs sdl3` -lSDL3_ttf -pthread -lm -ldl
+C_SRC    = main.c font.c weather.c image.c cJSON/cJSON.c
 
 # Objects
 OBJ = $(C_SRC:.c=.o)

@@ -33,6 +33,7 @@
 
 #include "font.h"
 #include "weather.h"
+#include "image.h"
 #include "common.h"
 
 /* Window size. */
@@ -129,7 +130,6 @@ static struct args {
 };
 
 /* Forward definitions. */
-static void render_image(SDL_Texture *tex, int x, int y);
 static void create_texts(
 	const SDL_Color *days_color,
 	const SDL_Color *max_temp_color,
@@ -147,7 +147,7 @@ static inline void update_frame(void)
 
 	/* Backgruond and icon. */
 	SDL_RenderTexture(renderer, bg_tex, NULL, NULL);
-	render_image(bg_icon_tex, 0,0);
+	image_render(bg_icon_tex, 0,0);
 
 	/* Footer and forecast days text. */
 	font_render_text(&txt_footer, FOOTER_X, FOOTER_Y);
@@ -170,9 +170,9 @@ static inline void update_frame(void)
 	font_render_text(&txt_location,    HDR_MAX_X - txt_location.width,    HDR_LOC_Y);
 
 	/* Forecast icons based on weather condition. */
-	render_image(fc_day1_tex, DAY1_IMG_X, DAY_IMG_Y);
-	render_image(fc_day2_tex, DAY2_IMG_X, DAY_IMG_Y);
-	render_image(fc_day3_tex, DAY3_IMG_X, DAY_IMG_Y);
+	image_render(fc_day1_tex, DAY1_IMG_X, DAY_IMG_Y);
+	image_render(fc_day2_tex, DAY2_IMG_X, DAY_IMG_Y);
+	image_render(fc_day3_tex, DAY3_IMG_X, DAY_IMG_Y);
 
 	/* Render everything. */
 	SDL_RenderPresent(renderer);
@@ -199,68 +199,6 @@ static int create_sdl_window(int w, int h, int flags)
 		SDL_SetWindowPosition(window, args.x, args.y);
 
 	return (0);
-}
-
-/**
- * @brief If the texture pointed by @p tex exists,
- * free it, otherwise, do nothing.
- *
- * @param tex Texture pointer.
- */
-static void free_image(SDL_Texture **tex)
-{
-	if (!*tex)
-		return;
-	SDL_DestroyTexture(*tex);
-	*tex = NULL;
-}
-
-/**
- * @brief Load a given image path pointed by @p img, and
- * save into the texture pointer pointed by @p tex.
- *
- * If the texture pointer already points to an existing
- * texture, the old texture is deallocated first.
- *
- * @param tex Texture pointer to be loaded.
- * @param img Image path.
- */
-static void load_image(SDL_Texture **tex, const char *img)
-{
-	free_image(tex);
-	*tex = IMG_LoadTexture(renderer, img);
-	if (!*tex)
-		panic("Unable to load texture (%s)\n", img);
-}
-
-/**
- * @brief Copy the texture pointed by @p tex into the
- * renderer, at coordinates @p x and @p y.
- *
- * This is an small wrapper around 'SDL_RenderTexture',
- * with an additional check if the texture pointer is
- * valid or not, i.e., this function can be called
- * at any time, even if the texture does not exist
- * (NULL).
- *
- * @param tex Texture to be rendered.
- * @param x   Screen X coordinate.
- * @param y   Screen Y coordinate.
- */
-static void render_image(SDL_Texture *tex, int x, int y)
-{
-	SDL_FRect rect;
-	int w, h;
-
-	if (!tex)
-		return;
-
-	SDL_QueryTexture(tex, NULL, NULL, &w, &h);
-	rect.x = x;
-	rect.y = y;
-	rect.w = w;
-	rect.h = h;
-	SDL_RenderTexture(renderer, tex, NULL, &rect);
 }
 
 /**
@@ -327,10 +265,10 @@ static void update_weather_info(void)
 		}
 	}
 
-	free_image(&bg_icon_tex);
-	load_image(&bg_tex, wbg);
+	image_free(&bg_icon_tex);
+	image_load(&bg_tex, wbg);
 	if (bg_icon_tex_path)
-		load_image(&bg_icon_tex, bg_icon_tex_path);
+		image_load(&bg_icon_tex, bg_icon_tex_path);
 
 	create_texts(cd, cmt, chdr);
 
@@ -342,9 +280,9 @@ static void update_weather_info(void)
 	snprintf(buff3, sizeof buff3, "assets/%s.png",
 		wi.forecast[2].condition);
 
-	load_image(&fc_day1_tex, buff1);
-	load_image(&fc_day2_tex, buff2);
-	load_image(&fc_day3_tex, buff3);
+	image_load(&fc_day1_tex, buff1);
+	image_load(&fc_day2_tex, buff2);
+	image_load(&fc_day3_tex, buff3);
 
 out:
 	SDL_AddTimer(args.update_weather_time_ms,
@@ -443,11 +381,11 @@ static void create_texts(
 void free_resources(void)
 {
 	/* Free textures. */
-	free_image(&bg_tex);
-	free_image(&bg_icon_tex);
-	free_image(&fc_day1_tex);
-	free_image(&fc_day2_tex);
-	free_image(&fc_day3_tex);
+	image_free(&bg_tex);
+	image_free(&bg_icon_tex);
+	image_free(&fc_day1_tex);
+	image_free(&fc_day2_tex);
+	image_free(&fc_day3_tex);
 	font_destroy_text(&txt_footer);
 	font_destroy_text(&txt_day1);
 	font_destroy_text(&txt_day2);
@@ -570,8 +508,6 @@ int main(int argc, char **argv)
 	/* Initialize. */
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
 		panic("SDL could not initialize!: %s\n", SDL_GetError());
-	if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG))
-		panic("Unable to initialize SDL_image!\n");
 	if (font_init() < 0)
 		panic("Unable to initialize SDL_ttf!\n");
 
@@ -586,7 +522,7 @@ int main(int argc, char **argv)
 		SDL_WINDOW_BORDERLESS|
 		SDL_WINDOW_UTILITY);
 
-	load_image(&bg_tex, "assets/bg_sunny_day.png");
+	image_load(&bg_tex, "assets/bg_sunny_day.png");
 	load_fonts();
 
 	update_weather_info();
@@ -605,7 +541,7 @@ int main(int argc, char **argv)
 
 		update_frame();
 		SDL_Delay(500);
-    }
+	}
 
 quit:
 	free_resources();
@@ -617,6 +553,5 @@ quit:
 
 	SDL_free(base_path);
 	font_quit();
-	IMG_Quit();
 	SDL_Quit();
 }

@@ -29,6 +29,7 @@ add_executable(weather
     main.c
     weather.c
     font.c
+    image.c
     cJSON/cJSON.c)
 
 target_compile_options(weather PRIVATE
@@ -40,25 +41,24 @@ set(FETCHCONTENT_QUIET FALSE)
 
 # Set the libraries you want to find
 include(FindPkgConfig)
-set(PKGCONFIG_LIBRARIES sdl3 sdl3-image sdl3-ttf)
+set(PKGCONFIG_LIBRARIES sdl3 sdl3-ttf)
 
 # Define the specific GIT_TAG for each library
 set(GIT_TAGS
 	f2ae00c1ad5194586bacbd7b374422bd1d47c81a  # SDL
-	6d6857c1833bfc18222373cf256aec11b653d136  # SDL_image
 	fee14e525f5bd99612b76e2737400d33eddf0595) # SDL_ttf
 
 # Define a mapping between pkg-config names and repository names
-set(GIT_REPOS SDL SDL_image SDL_ttf)
+set(GIT_REPOS SDL SDL_ttf)
 
 # Link names
-set(LNK_NAMES SDL3::SDL3 SDL3_image::SDL3_image SDL3_ttf::SDL3_ttf)
+set(LNK_NAMES SDL3::SDL3 SDL3_ttf::SDL3_ttf)
 
 # Build static
 set(SDL_STATIC TRUE CACHE BOOL "Build a SDL static library (if available)")
 
 # Find and set compiler and linker flags for each library using pkg-config
-foreach(INDEX RANGE 2)
+foreach(INDEX RANGE 1)
 
 	list(GET PKGCONFIG_LIBRARIES ${INDEX} LIBRARY)
 	list(GET GIT_REPOS ${INDEX} REPO)
