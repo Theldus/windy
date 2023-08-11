@@ -1,3 +1,4 @@
 *.o
 weather
 SDL_src/
+build/
