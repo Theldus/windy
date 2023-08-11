@@ -49,21 +49,23 @@ set(GIT_TAGS
 	fee14e525f5bd99612b76e2737400d33eddf0595) # SDL_ttf
 
 # Define a mapping between pkg-config names and repository names
-set(GIT_REPOS SDL SDL_ttf)
+set(GIT_REPOS  SDL SDL_ttf)
+set(GIT_HASHES
+	c04d4b4c5c532646735bac042936e5c3
+	22d4d16ca1978088322965eae940c5c3
+)
 
 # Link names
 set(LNK_NAMES SDL3::SDL3 SDL3_ttf::SDL3_ttf)
-
-# Build static
-set(SDL_STATIC TRUE CACHE BOOL "Build a SDL static library (if available)")
 
 # Find and set compiler and linker flags for each library using pkg-config
 foreach(INDEX RANGE 1)
 
 	list(GET PKGCONFIG_LIBRARIES ${INDEX} LIBRARY)
-	list(GET GIT_REPOS ${INDEX} REPO)
-	list(GET GIT_TAGS  ${INDEX} TAG)
-	list(GET LNK_NAMES ${INDEX} LINK)
+	list(GET GIT_REPOS  ${INDEX} REPO)
+	list(GET GIT_HASHES ${INDEX} HASH)
+	list(GET GIT_TAGS   ${INDEX} TAG)
+	list(GET LNK_NAMES  ${INDEX} LINK)
 
     pkg_check_modules(PKG_${LIBRARY} QUIET IMPORTED_TARGET ${LIBRARY})
     if (NOT PKG_${LIBRARY}_FOUND)
@@ -72,10 +74,9 @@ foreach(INDEX RANGE 1)
 
         FetchContent_Declare(
             "av_${LIBRARY}"
-            GIT_REPOSITORY https://github.com/libsdl-org/${REPO}.git
-            GIT_TAG ${TAG}
-            GIT_SHALLOW FALSE
-            GIT_PROGRESS TRUE)
+            URL https://github.com/libsdl-org/${REPO}/archive/${TAG}.zip
+            URL_HASH MD5=${HASH}
+		)
         FetchContent_MakeAvailable("av_${LIBRARY}")
 
      	# Add to our lib list 'normally'
