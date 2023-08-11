@@ -28,7 +28,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "cJSON/cJSON.h"
+#include "deps/cJSON/cJSON.h"
 #include "weather.h"
 #include "common.h"
 
