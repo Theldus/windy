@@ -201,13 +201,16 @@ static int create_sdl_window(int w, int h, int flags)
 }
 
 /**
- * @brief 'Main' weather update routine
+ * @brief 'Main' weather update routine.
  *
  * Executes the command given, read its output in stdout,
  * parse its json and then choose which text/icons should
  * be loaded into the screen.
+ *
+ * @param update_timer if true, update the SDL timer to
+ * execute again.
  */
-static void update_weather_info(void)
+static void update_weather_info(int update_timer)
 {
 	const SDL_Color *cd, *cmt, *chdr;
 	const char *bg_icon_tex_path;
@@ -216,6 +219,8 @@ static void update_weather_info(void)
 	char buff1[32] = {0};
 	char buff2[32] = {0};
 	char buff3[32] = {0};
+
+	log_info("Updating weather info...\n");
 
 	if (weather_get(args.execute_command, &wi) < 0)
 		log_err_to(out, "Unable to get weather info!\n");
@@ -284,8 +289,9 @@ static void update_weather_info(void)
 	image_load(&fc_day3_tex, buff3);
 
 out:
-	SDL_AddTimer(args.update_weather_time_ms,
-		update_weather_cb, NULL);
+	if (update_timer)
+		SDL_AddTimer(args.update_weather_time_ms,
+			update_weather_cb, NULL);
 }
 
 /**
@@ -524,7 +530,7 @@ int main(int argc, char **argv)
 	image_load(&bg_tex, "assets/bg_sunny_day.png");
 	load_fonts();
 
-	update_weather_info();
+	update_weather_info(0);
 
 	SDL_AddTimer(args.update_weather_time_ms,
 		update_weather_cb, NULL);
@@ -535,7 +541,7 @@ int main(int argc, char **argv)
 			if (event.type == SDL_EVENT_QUIT)
 				goto quit;
 			else if (event.type == SDL_EVENT_USER)
-				update_weather_info();
+				update_weather_info(1);
 		}
 
 		update_frame();
