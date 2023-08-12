@@ -26,11 +26,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common.h"
+#include "log.h"
 
 #define STBI_ONLY_PNG
 #define STB_IMAGE_IMPLEMENTATION
 #include "deps/stb_image.h"
+
+extern SDL_Renderer *renderer;
 
 /**
  * @brief If the texture pointed by @p tex exists,
@@ -71,15 +73,15 @@ void image_load(SDL_Texture **tex, const char *img)
 	comp = 4;
 	buff = stbi_load(img, &w, &h, &comp, 0);
 	if (!buff)
-		panic("Unable to load image: %s!\n", img);
+		log_panic("Unable to load image: %s!\n", img);
 
     s = SDL_CreateSurfaceFrom(buff, w, h, 4*w, SDL_PIXELFORMAT_RGBA32);
 	if (!s)
-		panic("Unable to create image surface!: %s\n", SDL_GetError());
+		log_panic("Unable to create image surface!: %s\n", SDL_GetError());
 
 	*tex = SDL_CreateTextureFromSurface(renderer, s);
 	if (!*tex)
-		panic("Unable to create image texture!\n");
+		log_panic("Unable to create image texture!\n");
 
 	SDL_DestroySurface(s);
 	stbi_image_free(buff);

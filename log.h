@@ -22,28 +22,36 @@
  * SOFTWARE.
  */
 
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef LOG_H
+#define LOG_H
 
-	#include <stdio.h>
 	#include <stdlib.h>
+	#include <unistd.h>
 	#include <SDL3/SDL.h>
 
-	extern SDL_Renderer *renderer;
+	extern void log_msg(int priority,
+		SDL_PRINTF_FORMAT_STRING const char *fmt, ...);
 
-	/* Panic abort. */
-	#define panic(...) \
+	/* Log messages. */
+	#define log_oom(msg) \
 		do {\
-			fprintf(stderr, __VA_ARGS__); \
-			exit(EXIT_FAILURE); \
+			write(STDOUT_FILENO, "Out of Memory: ", 15); \
+			write(STDOUT_FILENO, (msg), strlen(msg)); \
+			_exit(1); \
 		} while (0)
 
-	#define errto(lbl, ...) \
+	#define log_panic(...) \
 		do {\
-			fprintf(stderr, __VA_ARGS__); \
+			log_msg(SDL_LOG_PRIORITY_CRITICAL, __VA_ARGS__); \
+			exit(1); \
+		} while (0)
+
+	#define log_err_to(lbl, ...) \
+		do {\
+			log_msg(SDL_LOG_PRIORITY_ERROR, __VA_ARGS__); \
 			goto lbl; \
 		} while (0)
 
-	#define info(...) fprintf(stderr, __VA_ARGS__)
+	#define log_info(...) log_msg(SDL_LOG_PRIORITY_INFO, __VA_ARGS__)
 
-#endif /* COMMON_H. */
+#endif /* LOG_H. */

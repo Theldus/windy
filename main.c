@@ -33,7 +33,7 @@
 #include "font.h"
 #include "weather.h"
 #include "image.h"
-#include "common.h"
+#include "log.h"
 
 /* Window size. */
 #define SCREEN_WIDTH  341
@@ -189,7 +189,7 @@ static int create_sdl_window(int w, int h, int flags)
 {
 	if (SDL_CreateWindowAndRenderer(
 		w, h, flags, &window, &renderer) == -1)
-		panic("Unable to create window and renderer!\n");
+		log_panic("Unable to create window and renderer!\n");
 
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
@@ -218,7 +218,7 @@ static void update_weather_info(void)
 	char buff3[32] = {0};
 
 	if (weather_get(args.execute_command, &wi) < 0)
-		errto(out, "Unable to get weather info!\n");
+		log_err_to(out, "Unable to get weather info!\n");
 
 	/* Icon to be loaded if not 'clear'. */
 	snprintf(buff1,
@@ -297,13 +297,13 @@ static void load_fonts(void)
 	/* Load require fonts and sizes. */
 	font_16pt = font_open("assets/fonts/NotoSans-Regular.ttf", 16);
 	if (!font_16pt)
-		panic("Unable to open font with size 16pt!\n");
+		log_panic("Unable to open font with size 16pt!\n");
 	font_18pt = font_open("assets/fonts/NotoSans-Regular.ttf", 18);
 	if (!font_18pt)
-		panic("Unable to open font with size 18pt!\n");
+		log_panic("Unable to open font with size 18pt!\n");
 	font_40pt = font_open("assets/fonts/NotoSans-Regular.ttf", 40);
 	if (!font_40pt)
-		panic("Unable to open font with size 40pt!\n");
+		log_panic("Unable to open font with size 40pt!\n");
 }
 
 /**
@@ -469,7 +469,7 @@ void parse_args(int argc, char **argv)
 		case 't':
 			args.update_weather_time_ms = atoi(optarg)*1000;
 			if (!args.update_weather_time_ms) {
-				info("Invalid -t value, please choose a valid interval!\n");
+				log_info("Invalid -t value, please choose a valid interval!\n");
 				usage(argv[0]);
 			}
 			break;
@@ -489,7 +489,7 @@ void parse_args(int argc, char **argv)
 	}
 
 	if (!args.execute_command) {
-		info("Option -c is required!\n");
+		log_info("Option -c is required!\n");
 		usage(argv[0]);
 	}
 }
@@ -506,13 +506,13 @@ int main(int argc, char **argv)
 
 	/* Initialize. */
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
-		panic("SDL could not initialize!: %s\n", SDL_GetError());
+		log_panic("SDL could not initialize!: %s\n", SDL_GetError());
 	if (font_init() < 0)
-		panic("Unable to initialize SDL_ttf!\n");
+		log_panic("Unable to initialize SDL_ttf!\n");
 
 	base_path = SDL_GetBasePath();
 	if (!base_path)
-		panic("Unable to get program base path!\n");
+		log_panic("Unable to get program base path!\n");
 	chdir(base_path);
 
 	create_sdl_window(

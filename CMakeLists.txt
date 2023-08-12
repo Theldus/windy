@@ -30,6 +30,7 @@ add_executable(weather
     weather.c
     font.c
     image.c
+    log.c
     deps/cJSON/cJSON.c)
 
 target_compile_options(weather PRIVATE

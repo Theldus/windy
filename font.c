@@ -24,7 +24,9 @@
 
 #include <SDL3/SDL.h>
 #include "font.h"
-#include "common.h"
+#include "log.h"
+
+extern SDL_Renderer *renderer;
 
 /**
  * @brief Initializes the SDL_ttf font lib.
@@ -89,11 +91,11 @@ void font_create_text(struct rendered_text *rt, TTF_Font *font,
 	/* Create a new one. */
 	s = TTF_RenderUTF8_Blended(font, text, *color);
 	if (!s)
-		panic("Unable to create font surface!\n");
+		log_panic("Unable to create font surface!\n");
 
 	rt->text_texture = SDL_CreateTextureFromSurface(renderer, s);
 	if (!rt->text_texture)
-		panic("Unable to create font texture!\n");
+		log_panic("Unable to create font texture!\n");
 
 	rt->width  = s->w;
 	rt->height = s->h;

@@ -30,7 +30,7 @@
 
 #include "deps/cJSON/cJSON.h"
 #include "weather.h"
-#include "common.h"
+#include "log.h"
 
 #define LUNAR_CYCLE_CONSTANT 29.53058770576
 #define BUF_CAPACITY 16
@@ -83,7 +83,7 @@ static int abuf_alloc(struct abuf *ab)
 	ab->len = 0;
 	ab->str = calloc(1, BUF_CAPACITY);
 	if (!ab->str)
-		return (-1);
+		log_oom("Unable to allocate abuf!\n");
 
 	return (0);
 }
@@ -140,7 +140,7 @@ static int abuf_append(struct abuf *ab, const char *buf, size_t len)
 		size = round_power(ab->len + len + 1);
 		ptr  = realloc(ab->str, size);
 		if (!ptr)
-			return (-1);
+			log_oom("Unable to increase append buffer!\n");
 
 		ab->str = ptr;
 	}
@@ -180,7 +180,7 @@ static int is_condition_valid(const char *condition)
 		ok = 1;
 
 	if (!ok)
-		info("Condition '%s' is invalid, acceptable values are:\n"
+		log_info("Condition '%s' is invalid, acceptable values are:\n"
 			 "  clear, fog, clouds, showers, rainfall, thunder, snow\n",
 			 condition);
 
@@ -203,7 +203,7 @@ static int json_get_number(
 	cJSON *number;
 	number = cJSON_GetObjectItemCaseSensitive(root, item);
 	if (!cJSON_IsNumber(number))
-		errto(out0, "'%s' value not found and/or is invalid!\n", item);
+		log_err_to(out0, "'%s' value not found and/or is invalid!\n", item);
 	*dest = number->valueint;
 	return (0);
 out0:
@@ -226,10 +226,10 @@ static int json_get_string(
 	cJSON *str;
 	str = cJSON_GetObjectItemCaseSensitive(root, item);
 	if (!cJSON_IsString(str) || !str->valuestring)
-		errto(out0, "'%s' value not found and/or is invalid!\n", item);
+		log_err_to(out0, "'%s' value not found and/or is invalid!\n", item);
 	*dest = strdup(str->valuestring);
 	if (!*dest)
-		panic("Unable to allocate string\n");
+		log_oom("Unable to allocate string\n");
 	return (0);
 out0:
 	return (-1);
@@ -255,9 +255,9 @@ static int json_parse_weather(const char *json_str,
 
 	if (!(weather = cJSON_Parse(json_str))) {
 		if ((error_ptr = cJSON_GetErrorPtr()))
-			errto(out0, "Error: %s\n", error_ptr);
+			log_err_to(out0, "Error: %s\n", error_ptr);
 		else
-			errto(out0, "Error while parsing json!\n");
+			log_err_to(out0, "Error while parsing json!\n");
 	}
 
 	if (json_get_number(weather, "temperature", &wi->temperature) < 0)
@@ -275,7 +275,7 @@ static int json_parse_weather(const char *json_str,
 
 	forecast = cJSON_GetObjectItemCaseSensitive(weather, "forecast");
 	if (!forecast || !cJSON_IsArray(forecast))
-		errto(out0, "'forecast' array not found!\n");
+		log_err_to(out0, "'forecast' array not found!\n");
 
 	i = 0;
 	cJSON_ArrayForEach(day, forecast) {
@@ -292,7 +292,7 @@ static int json_parse_weather(const char *json_str,
 
 	/* Check if all fields were filled. */
 	if (i != 3)
-		errto(out0, "'forecast' array have missing items (%d/3)!\n", i);
+		log_err_to(out0, "'forecast' array have missing items (%d/3)!\n", i);
 
 	/* Validate all weather conditions. */
 	if (!is_condition_valid(wi->condition))
