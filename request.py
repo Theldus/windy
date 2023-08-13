@@ -25,6 +25,12 @@
 import requests
 import json
 
+#
+# Example:
+# LATITUDE="35.69"
+# LONGITUDE="139.69"
+# LOCATION="Tokyo, Japan"
+#
 LATITUDE="<change to your location>"
 LONGITUDE="<change to your location>"
 LOCATION="<City, State>"
