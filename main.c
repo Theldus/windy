@@ -206,11 +206,8 @@ static int create_sdl_window(int w, int h, int flags)
  * Executes the command given, read its output in stdout,
  * parse its json and then choose which text/icons should
  * be loaded into the screen.
- *
- * @param update_timer if true, update the SDL timer to
- * execute again.
  */
-static void update_weather_info(int update_timer)
+static void update_weather_info(void)
 {
 	const SDL_Color *cd, *cmt, *chdr;
 	const char *bg_icon_tex_path;
@@ -289,9 +286,8 @@ static void update_weather_info(int update_timer)
 	image_load(&fc_day3_tex, buff3);
 
 out:
-	if (update_timer)
-		SDL_AddTimer(args.update_weather_time_ms,
-			update_weather_cb, NULL);
+	SDL_AddTimer(args.update_weather_time_ms,
+		update_weather_cb, NULL);
 }
 
 /**
@@ -530,10 +526,7 @@ int main(int argc, char **argv)
 	image_load(&bg_tex, "assets/bg_sunny_day.png");
 	load_fonts();
 
-	update_weather_info(0);
-
-	SDL_AddTimer(args.update_weather_time_ms,
-		update_weather_cb, NULL);
+	update_weather_info();
 
 	while (1)
 	{
@@ -541,7 +534,7 @@ int main(int argc, char **argv)
 			if (event.type == SDL_EVENT_QUIT)
 				goto quit;
 			else if (event.type == SDL_EVENT_USER)
-				update_weather_info(1);
+				update_weather_info();
 		}
 
 		update_frame();
