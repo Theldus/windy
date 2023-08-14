@@ -1,4 +1,7 @@
+*~
+*.swp
+*.swo
 *.o
-weather
+windy
 SDL_src/
 build/

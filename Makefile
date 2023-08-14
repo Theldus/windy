@@ -32,11 +32,11 @@ OBJ = $(C_SRC:.c=.o)
 %.o: %.c Makefile
 	$(CC) $< $(CFLAGS) -c -o $@
 
-all: weather
+all: windy
 
-weather: $(OBJ)
+windy: $(OBJ)
 	$(CC) $(OBJ) -o $@ $(LDFLAGS)
 
 clean:
 	rm -f $(OBJ)
-	rm -f weather
+	rm -f windy

@@ -22,10 +22,10 @@
 
 cmake_minimum_required(VERSION 3.11)
 
-project(weather C)
+project(windy C)
 set(CMAKE_C_STANDARD 99)
 
-add_executable(weather
+add_executable(windy
     main.c
     weather.c
     font.c
@@ -33,7 +33,7 @@ add_executable(weather
     log.c
     deps/cJSON/cJSON.c)
 
-target_compile_options(weather PRIVATE
+target_compile_options(windy PRIVATE
 	-Wall -Wextra)
 
 include(FetchContent)
@@ -81,15 +81,15 @@ foreach(INDEX RANGE 1)
         FetchContent_MakeAvailable("av_${LIBRARY}")
 
      	# Add to our lib list 'normally'
-        target_link_libraries(weather PUBLIC ${LINK})
+        target_link_libraries(windy PUBLIC ${LINK})
     else()
     	# If found, add to our lib list via pkg-conig
-        target_link_libraries(weather PUBLIC PkgConfig::PKG_${LIBRARY})
+        target_link_libraries(windy PUBLIC PkgConfig::PKG_${LIBRARY})
     endif()
 endforeach()
 
 # Math lib
-target_link_libraries(weather PUBLIC m)
+target_link_libraries(windy PUBLIC m)
 
 # Copy assets folder to build folder
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets
