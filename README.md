@@ -1,4 +1,6 @@
 # 🍃 windy
+[![License: MIT](https://img.shields.io/badge/License-MIT-8affa5.svg)](https://opensource.org/licenses/MIT)
+
 An SDL3 widget that attempts to looks like the good ol' Windows Vista/7 weather
 widget
 
@@ -85,7 +87,8 @@ as long as it follows the JSON format below:
 }
 
 ```
-acceptable values for `condition` are: `clear`, `fog`, `clouds`, `showers`, `rainfall`, `thunder`, and `snow`.
+acceptable values for `condition` are: `clear`, `fog`, `clouds`, `showers`, 
+`rainfall`, `thunder`, and `snow`.
 
 ### Command-line arguments:
 
@@ -110,3 +113,45 @@ Example:
 
 Obs: Options -t,-x and -y are not required, -c is required!
 ```
+
+## Building
+Windy requires `SDL3`[^sdl3_note] and `SDL3_ttf` to build, if you don't have
+them installed and your distro/OS doesn't have packages for them (highly likely,
+as they're still under development) build with CMake:
+```bash
+$ git clone https://github.com/Theldus/windy.git
+$ cd windy
+$ mkdir build
+$ cd build
+$ cmake ..
+$ make -j4
+```
+CMake will check if the libs can be found on the system, and if not, it will
+download and build them.
+
+Optionally, if you are running Linux and already have the libraries installed on
+your system, just a 'make' is enough:
+```bash
+$ git clone https://github.com/Theldus/windy.git
+$ cd windy
+$ make -j4
+```
+
+[^sdl3_note]: SDL3 is the first version of SDL to support transparent framebuffer, 
+which is why version 3 is required.
+
+## Contributing
+Windy is always open to the community and willing to accept contributions,
+whether with issues, documentation, testing, new features, bugfixes, typos, and
+etc. Welcome aboard.
+
+## License
+Windy is licensed under the [MIT license](https://opensource.org/license/mit/).
+
+Weather icons were created by
+[gnokii](https://www.deviantart.com/gnokii/art/Weather-Icon-Set-308364079) and
+are licensed under the
+[Creative Commons Attribution 3.0 License](https://creativecommons.org/licenses/by/3.0/).
+
+NotoSans font was created by Google and is licensed under the
+[OFL license](https://opensource.org/license/ofl-1-1/).
