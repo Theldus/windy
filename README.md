@@ -16,7 +16,7 @@ Windows.
 
 Windy:
 <p align="center">
-<img align="center" src="https://github.com/Theldus/windy/assets/8294550/8b63edf6-2c21-4053-b8f0-ecd99e52332d" alt="Windy examples">
+<img align="center" src="https://i.imgur.com/3MVuf1W.png" alt="Windy examples">
 <br>
 Windy examples
 </p>
