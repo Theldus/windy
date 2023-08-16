@@ -338,27 +338,33 @@ void weather_free(struct weather_info *wi)
  */
 int weather_get(const char *command, struct weather_info *wi)
 {
+	int ret;
 	FILE *f;
 	struct abuf ab;
 	char tmp[256] = {0};
 
+	ret = -1;
+
 	if (abuf_alloc(&ab) < 0)
-		return (-1);
+		return (ret);
 
 	f = popen(command, "r");
 	if (!f)
-		return (-1);
+		goto out0;
 
 	while (fgets(tmp, sizeof(tmp), f))
 		abuf_append(&ab, tmp, strlen(tmp));
 
 	weather_free(wi);
 	if (json_parse_weather(ab.str, wi) < 0)
-		return (-1);
+		goto out1;
 
-	abuf_free(&ab);
+	ret = 0;
+out1:
 	pclose(f);
-	return (0);
+out0:
+	abuf_free(&ab);
+	return (ret);
 }
 
 /**
