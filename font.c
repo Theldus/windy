@@ -22,11 +22,108 @@
  * SOFTWARE.
  */
 
+#include <string.h>
 #include <SDL3/SDL.h>
 #include "font.h"
 #include "log.h"
 
 extern SDL_Renderer *renderer;
+
+/**
+ * @brief Calculate the length of an UTF-8 encoded string
+ *
+ * @param s UTF-8 string.
+ *
+ * @return Returns the amount of characters in the
+ * string.
+ */
+static inline size_t utf8_strlen(const char *s)
+{
+	size_t len;
+	len = 0;
+	while (*s) {
+		if ((*s & 0xc0) != 0x80)
+			len++;
+		s++;
+	}
+	return (len);
+}
+
+/**
+ * @brief For a given UTF-8 encoded text in @p u8_txt, returns
+ * a new string of @p new_size characters, adding ellipsis
+ * at the end of the text.
+ *
+ * @param u8_txt   UTF-8 text to be truncated.
+ * @param new_size New size (in UTF-8 characters) of the
+ *                 truncated text.
+ *
+ * @return Returns a new string containing the truncated
+ * text.
+ *
+ * @note The @p new_size should be less than the current
+ * size (in UTF-8 characters) of the string, examples:
+ *
+ * Input (new_size) -> output:
+ * abcdef (4) -> a...
+ * abc    (3) -> abc
+ * abc    (4) -> abc
+ * abcdef (6) -> abcdef
+ * abcdef (5) -> ab...
+ * abcdef (3) -> NULL
+ * abcdef (2) -> NULL
+ * ...
+ */
+static char *utf8_truncate(const char *u8_txt, size_t new_size)
+{
+	char *s;
+	size_t u8_len;
+	size_t byte_count;
+	size_t length_count;
+
+	u8_len = utf8_strlen(u8_txt);
+
+	/*
+	 * If the required new size is already less
+	 * than or equal the current character amount,
+	 * there is no need to add ellipsis.
+	 */
+	if (u8_len <= new_size)
+		return (strdup(u8_txt));
+
+	/* Returns NULL if the required size is less than the
+	 * ellipsis size (because doesn't make sense...) */
+	else if (new_size <= 3)
+		return (NULL);
+
+	s            = (char*)u8_txt;
+	u8_len       = utf8_strlen(u8_txt);
+	byte_count   = 0;
+	length_count = 0;
+
+	/*
+	 * Since our string needs to have at most new_size
+	 * characters, our new size will be new_size-3,
+	 * because we're adding ellipsis to the text.
+	 */
+	new_size -= 3;
+
+	/* Count how may bytes have the desired size. */
+	while (*s++ && length_count < new_size) {
+		if ((*s & 0xC0) != 0x80)
+			length_count++;
+		byte_count++;
+	}
+
+	/* Allocate new string: utf8 + ... + \0. */
+	s = calloc(1, byte_count + 3 + 1);
+	if (!s)
+		log_oom("Unable to allocate UTF8 string!\n");
+
+	memcpy(s + 0,          u8_txt, byte_count);
+	memcpy(s + byte_count, "...", 3);
+	return (s);
+}
 
 /**
  * @brief Initializes the SDL_ttf font lib.
@@ -68,25 +165,44 @@ void font_close(TTF_Font *font) {
  * @brief Creates a new SDL_Texture for a given @p text,
  * @p color and @p font, returning the result into @p rt.
  *
- * @param rt    Rendered text structure pointer.
- * @param font  Already opened TTF font.
- * @param text  Text to be created.
- * @param color SDL color
+ * @param rt     Rendered text structure pointer.
+ * @param font   Already opened TTF font.
+ * @param text   Text to be created.
+ * @param color  SDL color
+ * @param mwidth Maximum text width (in pixels, 0 to not
+ *               check). If the text exceeds the maximum
+ *               size, ellipsis will be added.
  *
  * @note If there is an previous allocated text, it will
  * be destroyed first, so multiples calls to this is
  * safe.
  */
 void font_create_text(struct rendered_text *rt, TTF_Font *font,
-	const char *text, const SDL_Color *color)
+	const char *text, const SDL_Color *color, unsigned mwidth)
 {
 	SDL_Surface *s;
+	char *new_text;
+	int extent, count;
+
+	new_text = NULL;
 
 	if (!rt)
 		return;
 
 	/* Clear previous text, if any. */
 	font_destroy_text(rt);
+
+	/*
+	 * Check maximum width was provided _and_ if the
+	 * the text exceeds the maximum size.
+	 */
+	if (mwidth) {
+		TTF_MeasureUTF8(font, text, mwidth, &extent, &count);
+		if ((size_t)count < utf8_strlen(text)) {
+			new_text = utf8_truncate(text, count);
+			text     = new_text;
+		}
+	}
 
 	/* Create a new one. */
 	s = TTF_RenderUTF8_Blended(font, text, *color);
@@ -100,6 +216,7 @@ void font_create_text(struct rendered_text *rt, TTF_Font *font,
 	rt->width  = s->w;
 	rt->height = s->h;
 	SDL_DestroySurface(s);
+	free(new_text);
 }
 
 /**

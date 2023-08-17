@@ -78,6 +78,7 @@ static SDL_Color color_black = {0,0,0,SDL_ALPHA_OPAQUE};
  * were obtained. */
 #define FOOTER_X  21
 #define FOOTER_Y 222
+#define FOOTER_MAX_WIDTH 292
 
 /* Forecast days. */
 #define DAY_Y    151 /* Y-axis for the days text.   */
@@ -111,6 +112,7 @@ static SDL_Color color_black = {0,0,0,SDL_ALPHA_OPAQUE};
 #define HDR_COND_Y    60
 #define HDR_MINMAX_Y  83
 #define HDR_LOC_Y    120
+#define HDR_MAX_WIDTH FOOTER_MAX_WIDTH
 
 /* Current weather info. */
 static struct weather_info wi = {0};
@@ -339,30 +341,31 @@ static void create_texts(
 	weather_get_forecast_days(&d1, &d2, &d3);
 
 	/* Footer. */
-	font_create_text(&txt_footer, font_16pt, wi.provider, days_color);
+	font_create_text(&txt_footer, font_16pt, wi.provider, days_color,
+		FOOTER_MAX_WIDTH);
 
 	/* Forecast days string. */
-	font_create_text(&txt_day1, font_16pt, days_of_week[d1], days_color);
-	font_create_text(&txt_day2, font_16pt, days_of_week[d2], days_color);
-	font_create_text(&txt_day3, font_16pt, days_of_week[d3], days_color);
+	font_create_text(&txt_day1, font_16pt, days_of_week[d1], days_color, 0);
+	font_create_text(&txt_day2, font_16pt, days_of_week[d2], days_color, 0);
+	font_create_text(&txt_day3, font_16pt, days_of_week[d3], days_color, 0);
 
 	/* Max temperature value. */
 	snprintf(buff1, sizeof buff1, "%dº", wi.forecast[0].max_temp);
 	snprintf(buff2, sizeof buff2, "%dº", wi.forecast[1].max_temp);
 	snprintf(buff3, sizeof buff3, "%dº", wi.forecast[2].max_temp);
 
-	font_create_text(&txt_day1_max, font_16pt, buff1, max_temp_color);
-	font_create_text(&txt_day2_max, font_16pt, buff2, max_temp_color);
-	font_create_text(&txt_day3_max, font_16pt, buff3, max_temp_color);
+	font_create_text(&txt_day1_max, font_16pt, buff1, max_temp_color, 0);
+	font_create_text(&txt_day2_max, font_16pt, buff2, max_temp_color, 0);
+	font_create_text(&txt_day3_max, font_16pt, buff3, max_temp_color, 0);
 
 	/* Min temperature value. */
 	snprintf(buff1, sizeof buff1, "%dº", wi.forecast[0].min_temp);
 	snprintf(buff2, sizeof buff2, "%dº", wi.forecast[1].min_temp);
 	snprintf(buff3, sizeof buff3, "%dº", wi.forecast[2].min_temp);
 
-	font_create_text(&txt_day1_min, font_16pt, buff1, days_color);
-	font_create_text(&txt_day2_min, font_16pt, buff2, days_color);
-	font_create_text(&txt_day3_min, font_16pt, buff3, days_color);
+	font_create_text(&txt_day1_min, font_16pt, buff1, days_color, 0);
+	font_create_text(&txt_day2_min, font_16pt, buff2, days_color, 0);
+	font_create_text(&txt_day3_min, font_16pt, buff3, days_color, 0);
 
 	/* Header: location, max/min, current condition and temperature. */
 	snprintf(buff1, sizeof buff1, "%dº - %dº", wi.max_temp, wi.min_temp);
@@ -370,10 +373,11 @@ static void create_texts(
 		toupper(wi.condition[0]), wi.condition+1);
 	snprintf(buff3, sizeof buff3, "%dº", wi.temperature);
 
-	font_create_text(&txt_location, font_18pt, wi.location, hdr_color);
-	font_create_text(&txt_curr_minmax, font_18pt, buff1, hdr_color);
-	font_create_text(&txt_curr_cond, font_18pt, buff2, hdr_color);
-	font_create_text(&txt_curr_temp, font_40pt, buff3, hdr_color);
+	font_create_text(&txt_location, font_18pt, wi.location, hdr_color,
+		HDR_MAX_WIDTH);
+	font_create_text(&txt_curr_minmax, font_18pt, buff1, hdr_color, 0);
+	font_create_text(&txt_curr_cond, font_18pt, buff2, hdr_color, 0);
+	font_create_text(&txt_curr_temp, font_40pt, buff3, hdr_color, 0);
 }
 
 /**

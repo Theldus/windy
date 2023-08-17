@@ -39,7 +39,7 @@
 	extern TTF_Font *font_open(const char *file, int ptsize);
 	extern void font_close(TTF_Font *font);
 	extern void font_create_text(struct rendered_text *rt, TTF_Font *font,
-		const char *text, const SDL_Color *color);
+		const char *text, const SDL_Color *color, unsigned mwidth);
 	extern void font_destroy_text(struct rendered_text *rt);
 	extern void font_render_text(struct rendered_text *rt, int x, int y);
 
