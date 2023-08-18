@@ -532,17 +532,31 @@ int main(int argc, char **argv)
 
 	update_weather_info();
 
+	/* Ignore some events that might wake us up
+	 * everytime. */
+	SDL_SetEventEnabled(SDL_EVENT_CLIPBOARD_UPDATE, 0);
+
 	while (1)
 	{
-		while (SDL_PollEvent(&event) != 0) {
+		while (SDL_WaitEvent(&event) != 0) {
 			if (event.type == SDL_EVENT_QUIT)
 				goto quit;
-			else if (event.type == SDL_EVENT_USER)
+			else if (event.type == SDL_EVENT_USER) {
 				update_weather_info();
-		}
+				update_frame();
+			}
 
-		update_frame();
-		SDL_Delay(500);
+			/* Only redraw if there is a WINDOW* or DISPLAY*
+			 * event, as most events are unrelated to us. */
+			else if
+				((event.type >= SDL_EVENT_WINDOW_FIRST  &&
+				  event.type <= SDL_EVENT_WINDOW_LAST)  ||
+				((event.type >= SDL_EVENT_DISPLAY_FIRST &&
+				  event.type <= SDL_EVENT_DISPLAY_LAST)))
+			{
+				update_frame();
+			}
+		}
 	}
 
 quit:
