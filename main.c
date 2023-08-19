@@ -580,4 +580,5 @@ quit:
 	SDL_free(base_path);
 	font_quit();
 	SDL_Quit();
+	return (0);
 }
