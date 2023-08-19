@@ -510,6 +510,16 @@ int main(int argc, char **argv)
 
 	parse_args(argc, argv);
 
+	/*
+	 * By default, SDL disables the use of a screensaver and
+	 * _also_ the monitor to go into standby while an
+	 * application is running. Since Windy is a desktop widget,
+	 * this default behavior is not what you want and the SDL
+	 * needs to allow screensavers and standby mode to work as
+	 * expected.
+	 */
+	SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
+
 	/* Initialize. */
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
 		log_panic("SDL could not initialize!: %s\n", SDL_GetError());
