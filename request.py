@@ -44,34 +44,34 @@ PROVIDER="OpenMeteo"
 # Function to convert weather code to a human-readable condition
 def get_weather_condition(code):
 	conditions = {
-		0: "clear",		# Clear sky
-		1: "clear",		# Mainly clear
-		2: "clouds",	# Partly cloudy
-		3: "clouds",	# Overcast
-		45: "fog",		# Fog
-		48: "fog",		# Depositing rime fog
-		51: "showers",	# Drizzle: Light intensity
-		53: "showers",	# Drizzle: Moderate intensity
-		55: "showers",	# Drizzle: Dense intensity
-		56: "showers",	# Freezing Drizzle: Light intensity
-		57: "showers",	# Freezing Drizzle: Dense intensity
+		0: "clear",     # Clear sky
+		1: "clear",     # Mainly clear
+		2: "clear",     # Partly cloudy
+		3: "clouds",    # Overcast
+		45: "fog",      # Fog
+		48: "fog",      # Depositing rime fog
+		51: "showers",  # Drizzle: Light intensity
+		53: "showers",  # Drizzle: Moderate intensity
+		55: "showers",  # Drizzle: Dense intensity
+		56: "showers",  # Freezing Drizzle: Light intensity
+		57: "showers",  # Freezing Drizzle: Dense intensity
 		61: "rainfall", # Rain: Slight intensity
 		63: "rainfall", # Rain: Moderate intensity
 		65: "rainfall", # Rain: Heavy intensity
 		66: "rainfall", # Freezing Rain: Light intensity
 		67: "rainfall", # Freezing Rain: Heavy intensity
-		71: "snow",		# Snow fall: Slight intensity
-		73: "snow",		# Snow fall: Moderate intensity
-		75: "snow",		# Snow fall: Heavy intensity
-		77: "snow",		# Snow grains
+		71: "snow",     # Snow fall: Slight intensity
+		73: "snow",     # Snow fall: Moderate intensity
+		75: "snow",     # Snow fall: Heavy intensity
+		77: "snow",     # Snow grains
 		80: "rainfall", # Rain showers: Slight intensity
 		81: "rainfall", # Rain showers: Moderate intensity
 		82: "rainfall", # Rain showers: Violent intensity
-		85: "snow",		# Snow showers: Slight intensity
-		86: "snow",		# Snow showers: Heavy intensity
-		95: "thunder",	# Thunderstorm: Slight or moderate
-		96: "thunder",	# Thunderstorm: With slight hail
-		99: "thunder"	# Thunderstorm: With heavy hail
+		85: "snow",     # Snow showers: Slight intensity
+		86: "snow",     # Snow showers: Heavy intensity
+		95: "thunder",  # Thunderstorm: Slight or moderate
+		96: "thunder",  # Thunderstorm: With slight hail
+		99: "thunder"   # Thunderstorm: With heavy hail
 	}
 	return conditions.get(code, "unknown")
 
