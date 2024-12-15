@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Davidson Francis <davidsondfgl@gmail.com>
+ * Copyright (c) 2023-2024 Davidson Francis <davidsondfgl@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -135,8 +135,8 @@ static void create_texts(
 	const SDL_Color *days_color,
 	const SDL_Color *max_temp_color,
 	const SDL_Color *hdr_color);
-static Uint32 update_weather_cb(Uint32 interval,
-	void *data);
+static Uint32 update_weather_cb(void *userdata,
+	SDL_TimerID timerID, Uint32 interval);
 
 /**
  * Update logic and drawing for each frame
@@ -189,8 +189,8 @@ static inline void update_frame(void)
  */
 static int create_sdl_window(int w, int h, int flags)
 {
-	if (SDL_CreateWindowAndRenderer(
-		w, h, flags, &window, &renderer) == -1)
+	if (!SDL_CreateWindowAndRenderer(
+		"windy", w, h, flags, &window, &renderer))
 		log_panic("Unable to create window and renderer!\n");
 
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
@@ -416,15 +416,17 @@ void free_resources(void)
 /**
  * @brief SDL timer callback to update the weather
  *
+ * @param userdata Custom data
+ * @param timerID  Current timer being processed.
  * @param interval Current timer interval
- * @param data Custom data
  * @return Returns the time of the next callback, 0
  * to disable.
  */
-static Uint32 update_weather_cb(Uint32 interval, void *data)
+static Uint32 update_weather_cb(void *userdata, SDL_TimerID timerID, Uint32 interval)
 {
+	((void)userdata);
+	((void)timerID);
 	((void)interval);
-	((void)data);
 	SDL_Event event;
 	event.type       = SDL_EVENT_USER;
 	event.user.data1 = NULL;
@@ -505,8 +507,8 @@ void parse_args(int argc, char **argv)
  */
 int main(int argc, char **argv)
 {
+	const char *base_path;
 	SDL_Event event;
-	char *base_path;
 
 	parse_args(argc, argv);
 
@@ -521,7 +523,7 @@ int main(int argc, char **argv)
 	SDL_SetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, "1");
 
 	/* Initialize. */
-	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
+	if (!SDL_Init(SDL_INIT_VIDEO))
 		log_panic("SDL could not initialize!: %s\n", SDL_GetError());
 	if (font_init() < 0)
 		log_panic("Unable to initialize SDL_ttf!\n");
@@ -577,7 +579,6 @@ quit:
 	if (window)
 		SDL_DestroyWindow(window);
 
-	SDL_free(base_path);
 	font_quit();
 	SDL_Quit();
 	return (0);

@@ -1,6 +1,6 @@
 # MIT License
 #
-# Copyright (c) 2023 Davidson Francis <davidsondfgl@gmail.com>
+# Copyright (c) 2023-2024 Davidson Francis <davidsondfgl@gmail.com>
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -46,14 +46,14 @@ set(PKGCONFIG_LIBRARIES sdl3 sdl3-ttf)
 
 # Define the specific GIT_TAG for each library
 set(GIT_TAGS
-	f2ae00c1ad5194586bacbd7b374422bd1d47c81a  # SDL
-	fee14e525f5bd99612b76e2737400d33eddf0595) # SDL_ttf
+	6cc9ce183d904489bf8e33e26b91d6012667e1b0  # SDL
+	0ad0c2518be948300ed1e133741932f1ba2a4e7b) # SDL_ttf
 
 # Define a mapping between pkg-config names and repository names
 set(GIT_REPOS  SDL SDL_ttf)
 set(GIT_HASHES
-	c04d4b4c5c532646735bac042936e5c3
-	22d4d16ca1978088322965eae940c5c3
+	f164f590589a09d92922dbcd504daaa6
+	01f465502c14817f39aad2fc5f2a84f7
 )
 
 # Link names

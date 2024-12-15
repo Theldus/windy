@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Davidson Francis <davidsondfgl@gmail.com>
+ * Copyright (c) 2023-2024 Davidson Francis <davidsondfgl@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,7 +75,7 @@ void image_load(SDL_Texture **tex, const char *img)
 	if (!buff)
 		log_panic("Unable to load image: %s!\n", img);
 
-    s = SDL_CreateSurfaceFrom(buff, w, h, 4*w, SDL_PIXELFORMAT_RGBA32);
+	s = SDL_CreateSurfaceFrom(w, h, SDL_PIXELFORMAT_RGBA32, buff, 4*w);
 	if (!s)
 		log_panic("Unable to create image surface!: %s\n", SDL_GetError());
 
@@ -104,12 +104,12 @@ void image_load(SDL_Texture **tex, const char *img)
 void image_render(SDL_Texture *tex, int x, int y)
 {
 	SDL_FRect rect;
-	int w, h;
+	float w, h;
 
 	if (!tex)
 		return;
 
-	SDL_QueryTexture(tex, NULL, NULL, &w, &h);
+	SDL_GetTextureSize(tex, &w, &h);
 	rect.x = x;
 	rect.y = y;
 	rect.w = w;

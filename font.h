@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Davidson Francis <davidsondfgl@gmail.com>
+ * Copyright (c) 2023-2024 Davidson Francis <davidsondfgl@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 #ifndef FONT_H
 #define FONT_H
 
-	#include <SDL3/SDL_ttf.h>
+	#include <SDL3_ttf/SDL_ttf.h>
 
 	struct rendered_text
 	{

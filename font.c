@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023 Davidson Francis <davidsondfgl@gmail.com>
+ * Copyright (c) 2023-2024 Davidson Francis <davidsondfgl@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,74 +55,45 @@ static inline size_t utf8_strlen(const char *s)
  * at the end of the text.
  *
  * @param u8_txt   UTF-8 text to be truncated.
- * @param new_size New size (in UTF-8 characters) of the
- *                 truncated text.
+ * @param max_size Max size (in bytes) of the truncated text.
  *
  * @return Returns a new string containing the truncated
  * text.
- *
- * @note The @p new_size should be less than the current
- * size (in UTF-8 characters) of the string, examples:
- *
- * Input (new_size) -> output:
- * abcdef (4) -> a...
- * abc    (3) -> abc
- * abc    (4) -> abc
- * abcdef (6) -> abcdef
- * abcdef (5) -> ab...
- * abcdef (3) -> NULL
- * abcdef (2) -> NULL
- * ...
  */
-static char *utf8_truncate(const char *u8_txt, size_t new_size)
+static char *utf8_truncate(const unsigned char *u8_txt, size_t max_size)
 {
-	char *s;
-	size_t u8_len;
-	size_t byte_count;
-	size_t length_count;
+	const unsigned char *s;
+	size_t codep_cnt;
+	char *new;
 
-	u8_len = utf8_strlen(u8_txt);
-
-	/*
-	 * If the required new size is already less
-	 * than or equal the current character amount,
-	 * there is no need to add ellipsis.
-	 */
-	if (u8_len <= new_size)
-		return (strdup(u8_txt));
-
-	/* Returns NULL if the required size is less than the
-	 * ellipsis size (because doesn't make sense...) */
-	else if (new_size <= 3)
-		return (NULL);
-
-	s            = (char*)u8_txt;
-	u8_len       = utf8_strlen(u8_txt);
-	byte_count   = 0;
-	length_count = 0;
+	codep_cnt = 0;
 
 	/*
-	 * Since our string needs to have at most new_size
-	 * characters, our new size will be new_size-3,
-	 * because we're adding ellipsis to the text.
+	 * Walk 3 codepoints right before the target byte, then
+	 * add our ellipsis.
+	 *
+	 * Since characters might be bigger than others, 3 codepoints
+	 * is not equal to 3 '...', i.e., 3 arbitrary UTF8 chars might
+	 * not have the same width as 3 dots, but most likely will fit
+	 * 3 dots.
 	 */
-	new_size -= 3;
-
-	/* Count how may bytes have the desired size. */
-	while (*s++ && length_count < new_size) {
-		if ((*s & 0xC0) != 0x80)
-			length_count++;
-		byte_count++;
+	s = u8_txt + max_size - 1;
+	while (s > u8_txt && codep_cnt < 3) {
+		/* If new codepoint or a single ascii char. */
+		if ( ((*s & 0xC0) != 0x80) || (*s <= 127) )
+			codep_cnt++;
+		s--;
+		max_size--;
 	}
 
 	/* Allocate new string: utf8 + ... + \0. */
-	s = calloc(1, byte_count + 3 + 1);
-	if (!s)
+	new = calloc(1, max_size + 3 + 1);
+	if (!new)
 		log_oom("Unable to allocate UTF8 string!\n");
 
-	memcpy(s + 0,          u8_txt, byte_count);
-	memcpy(s + byte_count, "...", 3);
-	return (s);
+	memcpy(new + 0,        u8_txt, max_size);
+	memcpy(new + max_size, "...", 3);
+	return (new);
 }
 
 /**
@@ -182,7 +153,7 @@ void font_create_text(struct rendered_text *rt, TTF_Font *font,
 {
 	SDL_Surface *s;
 	char *new_text;
-	int extent, count;
+	size_t count;
 
 	new_text = NULL;
 
@@ -197,15 +168,18 @@ void font_create_text(struct rendered_text *rt, TTF_Font *font,
 	 * the text exceeds the maximum size.
 	 */
 	if (mwidth) {
-		TTF_MeasureUTF8(font, text, mwidth, &extent, &count);
-		if ((size_t)count < utf8_strlen(text)) {
-			new_text = utf8_truncate(text, count);
+		TTF_MeasureString(font, text, 0, mwidth, NULL, &count);
+
+		/* If the reported count (in bytes) is less than
+		 * our string length, truncate it. */
+		if (count < strlen(text)) {
+			new_text = utf8_truncate((const unsigned char*)text, count);
 			text     = new_text;
 		}
 	}
 
 	/* Create a new one. */
-	s = TTF_RenderUTF8_Blended(font, text, *color);
+	s = TTF_RenderText_Blended(font, text, 0, *color);
 	if (!s)
 		log_panic("Unable to create font surface!\n");
 
