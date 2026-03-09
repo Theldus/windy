@@ -104,6 +104,7 @@ Options:
   -c <command> Command to execute when the update time reaches
   -x <pos>     Set the window X coordinate
   -y <pos>     Set the window Y coordinate
+  -v           Verbose mode: print window coordinates when it moves
   -h           This help
 
 Example:
@@ -111,13 +112,13 @@ Example:
  'python request.py'
     $ ./windy -t 1800 -c "python request.py"
 
-Obs: Options -t,-x and -y are not required, -c is required!
+Obs: Options -t,-x,-y and -v are not required, -c is required!
 ```
 
 ## Building
 Windy requires `SDL3`[^sdl3_note] and `SDL3_ttf` to build, if you don't have
-them installed and your distro/OS doesn't have packages for them (highly likely,
-as they're still under development) build with CMake:
+them installed and your distro/OS doesn't have packages for them build with
+CMake:
 ```bash
 $ git clone https://github.com/Theldus/windy.git
 $ cd windy

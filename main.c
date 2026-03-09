@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2023-2024 Davidson Francis <davidsondfgl@gmail.com>
+ * Copyright (c) 2023-2026 Davidson Francis <davidsondfgl@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -123,11 +123,13 @@ static struct args {
 	Uint32 update_weather_time_ms;
 	int x;
 	int y;
+	int verbose;
 } args = {
 	.execute_command = NULL,
 	.update_weather_time_ms = 600*1000,
 	.x = -1,
-	.y = -1
+	.y = -1,
+	.verbose = 0
 };
 
 /* Forward definitions. */
@@ -449,12 +451,13 @@ void usage(const char *prgname)
 		"  -c <command> Command to execute when the update time reaches\n"
 		"  -x <pos>     Set the window X coordinate\n"
 		"  -y <pos>     Set the window Y coordinate\n"
+		"  -v           Verbose mode: print window coordinates when it moves\n"
 		"  -h           This help\n\n"
 		"Example:\n"
 		" Update the weather info each 30 minutes, by running the command\n"
 		" 'python request.py'\n"
 		"    $ %s -t 1800 -c \"python request.py\"\n\n"
-		"Obs: Options -t,-x and -y are not required, -c is required!\n",
+		"Obs: Options -t,-x,-y and -v are not required, -c is required!\n",
 		prgname);
 	exit(EXIT_FAILURE);
 }
@@ -468,7 +471,7 @@ void usage(const char *prgname)
 void parse_args(int argc, char **argv)
 {
 	int c; /* Current arg. */
-	while ((c = getopt(argc, argv, "t:c:x:y:h")) != -1)
+	while ((c = getopt(argc, argv, "t:c:x:y:vh")) != -1)
 	{
 		switch (c) {
 		case 'h':
@@ -489,6 +492,9 @@ void parse_args(int argc, char **argv)
 			break;
 		case 'y':
 			args.y = atoi(optarg);
+			break;
+		case 'v':
+			args.verbose = 1;
 			break;
 		default:
 			usage(argv[0]);
@@ -566,6 +572,13 @@ int main(int argc, char **argv)
 				((event.type >= SDL_EVENT_DISPLAY_FIRST &&
 				  event.type <= SDL_EVENT_DISPLAY_LAST)))
 			{
+				if (args.verbose &&
+					event.type == SDL_EVENT_WINDOW_MOVED)
+				{
+					printf("Window position: x=%d, y=%d\n",
+						event.window.data1,
+						event.window.data2);
+				}
 				update_frame();
 			}
 		}
